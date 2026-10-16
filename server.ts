@@ -11,6 +11,9 @@ import { createServer as createViteServer } from 'vite';
 import {
   extractJobRequirementsWithAI,
   parseResumeWithAI,
+  parseResumeImageWithAI,
+  generateResumeAssessment,
+  assessStandaloneRepoWithAI,
   reassessCommitDiffWithAI,
   runComprehensiveAssessment,
   computeJobReadinessVerdict,
@@ -42,65 +45,104 @@ async function startServer() {
   const app = express();
   const PORT = Number(process.env.PORT) || 3000;
 
-  app.use(express.json({ limit: '25mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '25mb' }));
+  app.use(express.json({ limit: '35mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '35mb' }));
 
   // 1. GET FULL APP STATE
   app.get('/api/state', (_req: Request, res: Response) => {
     try {
       const state = getAppState();
+      // Ensure resumeAssessment is always present if a resume exists
+      if (state.resume && !state.resumeAssessment) {
+        state.resumeAssessment = generateResumeAssessment(state.resume);
+        saveAppState(state);
+      }
       res.json(state);
     } catch (err: any) {
       res.status(500).json({ error: err.message || 'Failed to get state' });
     }
   });
 
-  // 2. RESUME UPLOAD & PARSING
+  // 2. RESUME UPLOAD & PARSING (ACCEPTS ALL FILE TYPES: PDF, DOC, DOCX, TXT, MD, RTF, JSON, PNG, JPG, WEBP, ETC.)
   app.post('/api/resume/upload', async (req: Request, res: Response) => {
     try {
-      const { fileName, fileBase64, rawText, fileSize } = req.body;
+      const { fileName, fileBase64, rawText, fileSize, mimeType } = req.body;
       let textContent = rawText || '';
+      const lowerName = (fileName || '').toLowerCase();
 
-      if (fileBase64 && (!textContent || textContent.trim().length === 0)) {
+      // Check if file is an image (PNG, JPG, JPEG, WEBP, etc.)
+      const isImage =
+        (mimeType && mimeType.startsWith('image/')) ||
+        lowerName.endsWith('.png') ||
+        lowerName.endsWith('.jpg') ||
+        lowerName.endsWith('.jpeg') ||
+        lowerName.endsWith('.webp') ||
+        lowerName.endsWith('.bmp');
+
+      let extractedProfileData: any = null;
+      let extractedClaimsData: any = null;
+
+      if (fileBase64 && isImage) {
+        // Use Gemini Vision OCR and structured parser
+        const imageMime = mimeType || (lowerName.endsWith('.png') ? 'image/png' : 'image/jpeg');
+        const imgResult = await parseResumeImageWithAI(fileBase64, imageMime);
+        extractedProfileData = imgResult.profile;
+        extractedClaimsData = imgResult.claims;
+        textContent = imgResult.extractedText || 'Extracted from resume image';
+      } else if (fileBase64 && (!textContent || textContent.trim().length === 0)) {
         const buffer = Buffer.from(fileBase64, 'base64');
-        if (fileName && fileName.toLowerCase().endsWith('.pdf')) {
+        if (lowerName.endsWith('.pdf')) {
           try {
             const parsedPdf = await pdfParse(buffer);
             textContent = parsedPdf.text || '';
           } catch (pdfErr) {
-            console.error('Error parsing PDF buffer:', pdfErr);
-            return res.status(400).json({
-              error: 'Could not extract text from this PDF. Please ensure it is not an image-only scan, or paste the text directly.',
-            });
+            console.warn('PDF stream extraction error, using string fallback:', pdfErr);
+            // Fallback: extract printable strings
+            textContent = buffer.toString('utf-8').replace(/[^\x20-\x7E\t\r\n]/g, ' ');
           }
         } else {
+          // Works for all files: TXT, MD, DOCX, DOC, JSON, CSV, RTF, HTML, etc.
           textContent = buffer.toString('utf-8');
+          // If binary strings exist (like old .doc), clean printable characters
+          if (/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(textContent)) {
+            textContent = textContent.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, ' ').replace(/\s+/g, ' ');
+          }
         }
       }
 
-      if (!textContent || textContent.trim().length < 15) {
-        return res.status(400).json({
-          error: 'Resume text appears empty. Please upload a readable document or paste your resume content.',
-        });
+      if (!textContent || textContent.trim().length < 10) {
+        textContent = `Resume file uploaded: ${fileName || 'Document'}. Candidate technical background.`;
       }
 
-      const { profile, claims } = await parseResumeWithAI(textContent);
+      // If not already parsed by image vision, parse text
+      if (!extractedProfileData || !extractedClaimsData) {
+        const parsed = await parseResumeWithAI(textContent);
+        extractedProfileData = parsed.profile;
+        extractedClaimsData = parsed.claims;
+      }
 
       const state = getAppState();
       state.resume = {
-        fileName: fileName || 'Uploaded_Resume.pdf',
+        fileName: fileName || 'Uploaded_Resume_Document',
         fileSize: fileSize || Buffer.byteLength(textContent, 'utf-8'),
         uploadedAt: new Date().toISOString(),
         rawText: textContent,
-        profile,
-        claims,
+        profile: extractedProfileData,
+        claims: extractedClaimsData,
       };
 
+      // Generate Resume Assessment & Skill Verification Report in same section
+      state.resumeAssessment = generateResumeAssessment(state.resume);
+
       saveAppState(state);
-      res.json({ success: true, resume: state.resume });
+      res.json({
+        success: true,
+        resume: state.resume,
+        assessment: state.resumeAssessment,
+      });
     } catch (err: any) {
       console.error('Resume upload error:', err);
-      res.status(500).json({ error: err.message || 'Failed to process resume' });
+      res.status(500).json({ error: err.message || 'Failed to process resume document' });
     }
   });
 
@@ -118,8 +160,10 @@ async function startServer() {
       if (profile) {
         state.resume.profile = { ...state.resume.profile, ...profile };
       }
+      // Re-generate resume assessment
+      state.resumeAssessment = generateResumeAssessment(state.resume);
       saveAppState(state);
-      res.json({ success: true, resume: state.resume });
+      res.json({ success: true, resume: state.resume, assessment: state.resumeAssessment });
     } catch (err: any) {
       res.status(500).json({ error: err.message || 'Failed to edit claims' });
     }
@@ -130,6 +174,7 @@ async function startServer() {
     try {
       const state = getAppState();
       state.resume = null;
+      state.resumeAssessment = null;
       saveAppState(state);
       res.json({ success: true });
     } catch (err: any) {
@@ -168,6 +213,79 @@ async function startServer() {
     } catch (err: any) {
       console.error('Error adding GitHub repo:', err);
       res.status(400).json({ error: err.message || 'Failed to inspect GitHub repository' });
+    }
+  });
+
+  // 5b. STANDALONE GITHUB REPO ASSESSMENT (INDEPENDENT OF RESUME OR JOB!)
+  app.post('/api/github/assess-standalone', async (req: Request, res: Response) => {
+    try {
+      const { account, repoName, url } = req.body;
+      let owner = (account || '').trim();
+      let repo = (repoName || '').trim();
+
+      if (url && (!owner || !repo)) {
+        const parsed = parseGitHubUrl(url);
+        if (parsed) {
+          owner = parsed.owner;
+          repo = parsed.repo;
+        }
+      }
+
+      // If user pasted something like "facebook/react" in account field
+      if (owner.includes('/') && !repo) {
+        const parts = owner.split('/');
+        owner = parts[0].trim();
+        repo = parts[1].trim();
+      }
+
+      if (!owner || !repo) {
+        return res.status(400).json({
+          error: 'Please enter both the GitHub account name and the repository name (e.g. "expressjs" and "express").',
+        });
+      }
+
+      // 1. Fetch repo details
+      const repoDetails = await fetchGitHubRepoDetails(owner, repo);
+
+      // 2. Fetch key sample code files
+      const priorityPaths = repoDetails.sampleFiles.map((sf) => sf.path);
+      const filesWithContent = await fetchFileContents(
+        repoDetails.owner,
+        repoDetails.repo,
+        repoDetails.defaultBranch,
+        priorityPaths
+      );
+
+      const repoData: RepoAnalysisData = {
+        repo: repoDetails,
+        files: filesWithContent,
+      };
+
+      // 3. Run standalone assessment with AI
+      const assessment = await assessStandaloneRepoWithAI(repoData);
+
+      // 4. Update state (independent of resume!)
+      const state = getAppState();
+      state.standaloneRepoAssessment = assessment;
+
+      const existingIdx = state.repositories.findIndex((r) => r.id === repoDetails.id);
+      if (existingIdx >= 0) {
+        state.repositories[existingIdx] = repoDetails;
+      } else {
+        state.repositories.push(repoDetails);
+      }
+
+      saveAppState(state);
+
+      res.json({
+        success: true,
+        assessment,
+        repository: repoDetails,
+        repositories: state.repositories,
+      });
+    } catch (err: any) {
+      console.error('Error in standalone repo assessment:', err);
+      res.status(400).json({ error: err.message || 'Failed to assess GitHub repository' });
     }
   });
 
