@@ -1,0 +1,18 @@
+{
+  "resume": null,
+  "resumeAssessment": null,
+  "standaloneRepoAssessment": null,
+  "repositories": [],
+  "job": null,
+  "evidenceItems": [],
+  "consistencyFindings": [],
+  "verdict": null,
+  "actionPlan": [],
+  "history": [],
+  "settings": {
+    "autoCheckFrequencyMinutes": 15,
+    "autoReassessOnCommit": true,
+    "includePreferredSkillsInVerdict": true,
+    "minEvidenceConfidence": "medium"
+  }
+}

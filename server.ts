@@ -185,19 +185,39 @@ async function startServer() {
   // 5. ADD GITHUB REPO
   app.post('/api/github/add-repo', async (req: Request, res: Response) => {
     try {
-      const { url } = req.body;
-      if (!url) {
-        return res.status(400).json({ error: 'Please provide a GitHub repository URL' });
+      const { url, account, repoName } = req.body;
+      let owner = (account || '').trim();
+      let repo = (repoName || '').trim();
+
+      if (url && typeof url === 'string' && (!owner || !repo)) {
+        const parsed = parseGitHubUrl(url);
+        if (parsed) {
+          owner = parsed.owner;
+          repo = parsed.repo;
+        } else if (url.includes('/') && !url.includes('http')) {
+          const parts = url.split('/').map((s) => s.trim()).filter(Boolean);
+          if (parts.length >= 2) {
+            owner = parts[0];
+            repo = parts[1];
+          }
+        }
       }
 
-      const parsed = parseGitHubUrl(url);
-      if (!parsed) {
+      if (owner.includes('/') && !repo) {
+        const parts = owner.split('/').map((s: string) => s.trim()).filter(Boolean);
+        if (parts.length >= 2) {
+          owner = parts[0];
+          repo = parts[1];
+        }
+      }
+
+      if (!owner || !repo) {
         return res.status(400).json({
-          error: 'Invalid GitHub URL. Expected format: https://github.com/owner/repository',
+          error: 'Please provide a valid GitHub repository URL (e.g. https://github.com/expressjs/express) or account and repository name.',
         });
       }
 
-      const repoDetails = await fetchGitHubRepoDetails(parsed.owner, parsed.repo);
+      const repoDetails = await fetchGitHubRepoDetails(owner, repo);
       const state = getAppState();
 
       // Check if already added
@@ -223,24 +243,44 @@ async function startServer() {
       let owner = (account || '').trim();
       let repo = (repoName || '').trim();
 
-      if (url && (!owner || !repo)) {
+      if (url) {
         const parsed = parseGitHubUrl(url);
+        if (parsed) {
+          owner = parsed.owner;
+          repo = parsed.repo;
+        } else if (url.includes('/') && !url.includes('http')) {
+          const parts = url.split('/').map((s: string) => s.trim()).filter(Boolean);
+          if (parts.length >= 2) {
+            owner = parts[0];
+            repo = parts[1];
+          }
+        }
+      }
+
+      // If user pasted something like "facebook/react" or full URL in account or repo field
+      if (owner.includes('/') && !repo) {
+        const parsed = parseGitHubUrl(owner);
+        if (parsed) {
+          owner = parsed.owner;
+          repo = parsed.repo;
+        } else {
+          const parts = owner.split('/').map((s: string) => s.trim()).filter(Boolean);
+          if (parts.length >= 2) {
+            owner = parts[0];
+            repo = parts[1];
+          }
+        }
+      } else if (repo.includes('/') && !owner) {
+        const parsed = parseGitHubUrl(repo);
         if (parsed) {
           owner = parsed.owner;
           repo = parsed.repo;
         }
       }
 
-      // If user pasted something like "facebook/react" in account field
-      if (owner.includes('/') && !repo) {
-        const parts = owner.split('/');
-        owner = parts[0].trim();
-        repo = parts[1].trim();
-      }
-
       if (!owner || !repo) {
         return res.status(400).json({
-          error: 'Please enter both the GitHub account name and the repository name (e.g. "expressjs" and "express").',
+          error: 'Please enter a GitHub repository URL or both account name and repository name (e.g. "expressjs" and "express").',
         });
       }
 
