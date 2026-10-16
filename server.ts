@@ -131,6 +131,9 @@ async function startServer() {
         claims: extractedClaimsData,
       };
 
+      // Clear demo flag on genuine user upload
+      state.isDemoData = false;
+      state.demoLabel = undefined;
       // Generate Resume Assessment & Skill Verification Report in same section
       state.resumeAssessment = generateResumeAssessment(state.resume);
 
@@ -228,6 +231,8 @@ async function startServer() {
         state.repositories.push(repoDetails);
       }
 
+      state.isDemoData = false;
+      state.demoLabel = undefined;
       saveAppState(state);
       res.json({ success: true, repository: repoDetails, repositories: state.repositories });
     } catch (err: any) {
@@ -407,9 +412,19 @@ async function startServer() {
       const job = await extractJobRequirementsWithAI(title || '', rawDescription, url);
       const state = getAppState();
       state.job = job;
+      state.isDemoData = false;
+      state.demoLabel = undefined;
       saveAppState(state);
 
-      res.json({ success: true, job });
+      res.json({
+        success: true,
+        job,
+        extractionStatus: job.extractionStatus,
+        warning:
+          job.extractionStatus === 'extraction_failed'
+            ? job.extractionError || 'AI extraction failed. Please manually enter or confirm skills.'
+            : undefined,
+      });
     } catch (err: any) {
       console.error('Job parse error:', err);
       res.status(500).json({ error: err.message || 'Failed to extract job requirements' });
@@ -479,6 +494,8 @@ async function startServer() {
       state.consistencyFindings = consistencyFindings;
       state.verdict = verdict;
       state.actionPlan = actionPlan;
+      state.isDemoData = false;
+      state.demoLabel = undefined;
 
       saveAppState(state);
       res.json({
@@ -503,77 +520,131 @@ async function startServer() {
       }
 
       let anyUpdatesFound = false;
+      let reassessmentSucceededCount = 0;
+      let reassessmentFailedCount = 0;
       const historyEntries: ChangeHistoryEntry[] = [];
 
       for (const repo of state.repositories) {
-        const lastSha = repo.lastAnalyzedCommit.sha;
-        const comparison = await compareRepoCommits(repo.owner, repo.repo, lastSha);
+        // Last successfully assessed commit SHA
+        const lastAssessedSha = repo.lastAnalyzedCommit?.sha || 'unknown';
+        const comparison = await compareRepoCommits(repo.owner, repo.repo, lastAssessedSha);
 
-        if (comparison && comparison.hasNewerCommit) {
-          anyUpdatesFound = true;
+        if (!comparison || !comparison.hasNewerCommit) {
+          // No newer commits detected
+          if (repo.reassessmentStatus !== 'failed') {
+            repo.hasUpdate = false;
+            repo.reassessmentStatus = 'idle';
+          }
+          continue;
+        }
 
-          // Reassess skills affected by this commit
-          const reassessment = state.job && state.evidenceItems.length > 0
-            ? await reassessCommitDiffWithAI(
-                state.job,
-                state.evidenceItems,
-                comparison,
-                repo.repo
-              )
-            : {
-                reassessedSkills: [],
-                unchangedSkills: [],
-                overallSummary: `New commit ${comparison.headCommitSha} detected. Run an assessment to verify skills.`,
-                updatedEvidence: state.evidenceItems,
-              };
+        anyUpdatesFound = true;
+        // Record latest detected commit SHA separately from last assessed commit
+        repo.latestCommit = {
+          sha: comparison.headCommitSha,
+          message: comparison.headCommitMessage,
+          date: comparison.headCommitDate,
+          author: comparison.headCommitAuthor,
+        };
+        repo.hasUpdate = true;
 
-          // Update repo commit info
-          repo.lastAnalyzedCommit = {
-            sha: comparison.headCommitSha,
-            message: comparison.headCommitMessage,
-            date: comparison.headCommitDate,
-            author: comparison.headCommitAuthor,
-          };
-          repo.latestCommit = repo.lastAnalyzedCommit;
-          repo.hasUpdate = false;
+        // Prevent duplicate history entries when endpoint runs repeatedly
+        const alreadyInHistory = state.history.some(
+          (h) => h.repoName === repo.repo && h.newCommitSha === comparison.headCommitSha
+        );
 
-          // Update evidence and recompute verdict
-          if (reassessment.reassessedSkills.length > 0) {
-            state.evidenceItems = reassessment.updatedEvidence;
-            if (state.job) {
+        if (state.job && state.evidenceItems.length > 0) {
+          try {
+            repo.reassessmentStatus = 'pending';
+            const reassessment = await reassessCommitDiffWithAI(
+              state.job,
+              state.evidenceItems,
+              comparison,
+              repo.repo
+            );
+
+            // Reassessment succeeded: advance lastAnalyzedCommit only now!
+            repo.lastAnalyzedCommit = repo.latestCommit;
+            repo.hasUpdate = false;
+            repo.reassessmentStatus = 'success';
+            repo.lastReassessmentError = undefined;
+
+            if (reassessment.reassessedSkills.length > 0) {
+              state.evidenceItems = reassessment.updatedEvidence;
               state.verdict = computeJobReadinessVerdict(state.evidenceItems, state.job);
             }
+
+            if (!alreadyInHistory) {
+              const historyEntry: ChangeHistoryEntry = {
+                id: `hist-${Date.now()}-${repo.id}-${comparison.headCommitSha}`,
+                timestamp: new Date().toISOString(),
+                repoName: repo.repo,
+                previousCommitSha: comparison.baseCommitSha,
+                newCommitSha: comparison.headCommitSha,
+                commitMessage: comparison.headCommitMessage,
+                changedFiles: comparison.changedFiles,
+                reassessedSkills: reassessment.reassessedSkills,
+                unchangedSkills: reassessment.unchangedSkills,
+                overallChangeSummary: reassessment.overallSummary,
+              };
+              historyEntries.push(historyEntry);
+              state.history.unshift(historyEntry);
+            }
+            reassessmentSucceededCount++;
+          } catch (reassessErr: any) {
+            console.error(
+              `Reassessment failed for ${repo.owner}/${repo.repo} commit ${comparison.headCommitSha}:`,
+              reassessErr.message
+            );
+            // Reassessment failed: RETAIN pending update so user can retry!
+            // Do NOT mark commit as successfully assessed.
+            repo.hasUpdate = true;
+            repo.reassessmentStatus = 'failed';
+            repo.lastReassessmentError =
+              reassessErr.message || 'Automated reassessment failed. Please retry.';
+            reassessmentFailedCount++;
           }
-
-          // Add history entry
-          const historyEntry: ChangeHistoryEntry = {
-            id: `hist-${Date.now()}-${repo.id}`,
-            timestamp: new Date().toISOString(),
-            repoName: repo.repo,
-            previousCommitSha: comparison.baseCommitSha,
-            newCommitSha: comparison.headCommitSha,
-            commitMessage: comparison.headCommitMessage,
-            changedFiles: comparison.changedFiles,
-            reassessedSkills: reassessment.reassessedSkills,
-            unchangedSkills: reassessment.unchangedSkills,
-            overallChangeSummary: reassessment.overallSummary,
-          };
-
-          historyEntries.push(historyEntry);
-          state.history.unshift(historyEntry);
+        } else {
+          // No job / evidence items configured yet; mark as detected needing assessment
+          repo.reassessmentStatus = 'manual_review_needed';
+          if (!alreadyInHistory) {
+            const historyEntry: ChangeHistoryEntry = {
+              id: `hist-${Date.now()}-${repo.id}-${comparison.headCommitSha}`,
+              timestamp: new Date().toISOString(),
+              repoName: repo.repo,
+              previousCommitSha: comparison.baseCommitSha,
+              newCommitSha: comparison.headCommitSha,
+              commitMessage: comparison.headCommitMessage,
+              changedFiles: comparison.changedFiles,
+              reassessedSkills: [],
+              unchangedSkills: [],
+              overallChangeSummary: `New commit ${comparison.headCommitSha} detected. Select a target job to assess skill evidence.`,
+            };
+            historyEntries.push(historyEntry);
+            state.history.unshift(historyEntry);
+          }
         }
       }
 
       saveAppState(state);
 
+      let message = 'All connected repositories are up to date with the latest analyzed commits.';
+      if (reassessmentFailedCount > 0) {
+        message = `New commits detected, but reassessment could not complete for ${reassessmentFailedCount} repository. The update remains pending for retry.`;
+      } else if (reassessmentSucceededCount > 0) {
+        message = `Detected new commits across your projects! Reassessment completed successfully.`;
+      } else if (anyUpdatesFound) {
+        message = `New commits detected on GitHub. Run a skill assessment to evaluate them against your target job.`;
+      }
+
       res.json({
         success: true,
         updated: anyUpdatesFound,
+        reassessmentSuccess: reassessmentSucceededCount > 0,
+        failedCount: reassessmentFailedCount,
         historyEntries,
         state,
-        message: anyUpdatesFound
-          ? `Detected new commits across your projects! Reassessment completed.`
-          : `All connected repositories are up to date with the latest analyzed commits.`,
+        message,
       });
     } catch (err: any) {
       console.error('Check updates error:', err);

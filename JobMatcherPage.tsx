@@ -13,6 +13,7 @@ import {
   Check,
   X,
   Sparkles,
+  AlertTriangle,
 } from 'lucide-react';
 import type { JobRequirement, JobRequirementSkill } from '../types/index.ts';
 import { parseOrSaveJob, updateJobSkills } from '../api.ts';
@@ -305,6 +306,22 @@ export const JobMatcherPage: React.FC<JobMatcherPageProps> = ({
             </p>
           </div>
 
+          {job.extractionStatus === 'extraction_failed' && (
+            <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="font-bold text-sm">Automated Extraction Unavailable</p>
+                <p className="leading-relaxed">
+                  {job.extractionError ||
+                    'Automated skill extraction was unavailable. In accordance with SkillTrace evidence integrity standards, no generic fallback skills were fabricated.'}
+                </p>
+                <p className="font-semibold text-amber-800 dark:text-amber-300">
+                  Please use the &quot;+ Add Requirement&quot; button below to manually enter the skills from your target job posting.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* REQUIREMENTS TABLE (REQUIRED VS PREFERRED) */}
           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
@@ -431,14 +448,27 @@ export const JobMatcherPage: React.FC<JobMatcherPageProps> = ({
                 return (
                   <div key={skill.id} className="py-3 flex items-start justify-between gap-4 text-xs">
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-900">{skill.name}</span>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-bold text-slate-900 dark:text-white">{skill.name}</span>
                         <RequirementBadge type={skill.importance} />
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-600">
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
                           {skill.category}
                         </span>
+                        <span
+                          className={`text-[10px] px-2 py-0.5 rounded font-semibold border ${
+                            skill.source === 'user_confirmed' || skill.source === 'manual'
+                              ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                              : 'bg-sky-50 dark:bg-sky-950 text-sky-800 dark:text-sky-300 border-sky-200 dark:border-sky-800'
+                          }`}
+                        >
+                          {skill.source === 'user_confirmed'
+                            ? '✓ User Confirmed'
+                            : skill.source === 'manual'
+                            ? 'User Added'
+                            : 'AI Extracted'}
+                        </span>
                       </div>
-                      <p className="text-slate-600">{skill.description}</p>
+                      <p className="text-slate-600 dark:text-slate-400">{skill.description}</p>
                     </div>
 
                     <div className="flex items-center gap-1 shrink-0">
@@ -449,14 +479,14 @@ export const JobMatcherPage: React.FC<JobMatcherPageProps> = ({
                           setEditSkillCategory(skill.category);
                           setEditSkillImportance(skill.importance);
                         }}
-                        className="p-1.5 text-slate-400 hover:text-slate-700 rounded hover:bg-slate-100"
+                        className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded hover:bg-slate-100 dark:hover:bg-slate-700"
                         title="Edit requirement"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => handleDeleteSkill(skill.id)}
-                        className="p-1.5 text-slate-400 hover:text-rose-600 rounded hover:bg-slate-100"
+                        className="p-1.5 text-slate-400 hover:text-rose-600 rounded hover:bg-slate-100 dark:hover:bg-slate-700"
                         title="Remove requirement"
                       >
                         <Trash2 className="w-3.5 h-3.5" />

@@ -71,6 +71,8 @@ export interface GitHubRepo {
   lastAnalyzedCommit: CommitInfo;
   latestCommit?: CommitInfo;
   hasUpdate?: boolean;
+  reassessmentStatus?: 'idle' | 'pending' | 'success' | 'failed' | 'manual_review_needed';
+  lastReassessmentError?: string;
   selectedForAssessment: boolean;
   analyzedFilesCount: number;
   fileList: string[];
@@ -79,6 +81,13 @@ export interface GitHubRepo {
     size: number;
     category: 'code' | 'test' | 'config' | 'database' | 'docs' | 'other';
   }>;
+  analysisScope?: {
+    examinedFilesCount: number;
+    totalCandidateFilesCount: number;
+    isPartialScope: boolean;
+    branch: string;
+    commitSha: string;
+  };
 }
 
 export interface JobRequirementSkill {
@@ -87,6 +96,7 @@ export interface JobRequirementSkill {
   category: string;
   description: string;
   importance: 'required' | 'preferred';
+  source?: 'extracted' | 'user_confirmed' | 'manual';
 }
 
 export interface JobRequirement {
@@ -99,6 +109,8 @@ export interface JobRequirement {
   experienceLevel: string;
   overview: string;
   skills: JobRequirementSkill[];
+  extractionStatus?: 'ai_extracted' | 'user_provided' | 'extraction_failed';
+  extractionError?: string;
 }
 
 export interface Citation {
@@ -109,6 +121,8 @@ export interface Citation {
   lineRef?: string;
   codeExcerpt: string;
   reason: string;
+  isVerifiedInCommit?: boolean;
+  authorshipDisclaimer?: string;
 }
 
 export interface SkillEvidenceItem {
@@ -162,6 +176,7 @@ export interface JobReadinessVerdict {
   keyNextSteps: string[];
   limitations: string[];
   scoreFormula: string;
+  hasSufficientData?: boolean;
   assessedAt: string;
 }
 
@@ -265,5 +280,7 @@ export interface AppState {
   history: ChangeHistoryEntry[];
   settings: AppSettings;
   isAssessing?: boolean;
+  isDemoData?: boolean;
+  demoLabel?: string;
 }
 

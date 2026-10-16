@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import type { ResumeAssessment, ResumeClaim, ResumeData } from '../types/index.ts';
 import { uploadResumeFile, editResumeClaims, removeResume } from '../api.ts';
+import { ResumeProfessionalGuide } from '../components/ResumeProfessionalGuide.tsx';
 
 interface ResumePageProps {
   resume: ResumeData | null;
@@ -275,6 +276,9 @@ export const ResumePage: React.FC<ResumePageProps> = ({
       )}
 
 
+      {/* PROFESSIONAL RESUME OPTIMIZATION GUIDE */}
+      <ResumeProfessionalGuide />
+
       {/* PROMINENT UPLOAD CARD - ACCEPTS ALL FILE TYPES */}
       <div
         onDragOver={(e) => {
@@ -283,10 +287,10 @@ export const ResumePage: React.FC<ResumePageProps> = ({
         }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
-        className={`bg-white rounded-xl border-2 border-dashed p-8 text-center transition-all shadow-2xs ${
+        className={`bg-white dark:bg-slate-900 rounded-xl border-2 border-dashed p-8 text-center transition-all shadow-2xs ${
           isDragging
-            ? 'border-sky-500 bg-sky-50/30'
-            : 'border-slate-300 hover:border-slate-400'
+            ? 'border-sky-500 bg-sky-50/30 dark:bg-sky-950/30'
+            : 'border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600'
         }`}
       >
         <input
@@ -298,15 +302,15 @@ export const ResumePage: React.FC<ResumePageProps> = ({
         />
 
         <div className="max-w-md mx-auto space-y-4">
-          <div className="w-14 h-14 rounded-full bg-sky-50 text-sky-600 mx-auto flex items-center justify-center">
+          <div className="w-14 h-14 rounded-full bg-sky-50 dark:bg-sky-950/80 text-sky-600 dark:text-sky-400 mx-auto flex items-center justify-center">
             <Upload className="w-7 h-7" />
           </div>
 
           <div>
-            <h3 className="text-base font-bold text-slate-900">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">
               {resume ? 'Replace your current resume' : 'Choose any file or drag it here'}
             </h3>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               Supports <strong>all file formats</strong>: PDF, Word (DOCX/DOC), Text, Markdown, Images (PNG, JPG screenshots), RTF, JSON, up to 20 MB.
             </p>
           </div>
@@ -315,19 +319,19 @@ export const ResumePage: React.FC<ResumePageProps> = ({
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="px-5 py-2.5 rounded-lg bg-slate-900 text-white font-medium text-xs sm:text-sm hover:bg-slate-800 transition-colors shadow-xs"
+              className="px-5 py-2.5 rounded-lg bg-slate-900 dark:bg-amber-600 text-white font-medium text-xs sm:text-sm hover:bg-slate-800 dark:hover:bg-amber-700 transition-colors shadow-xs"
             >
               {isUploading ? 'Extracting Content & Skills...' : 'Select Any Resume File'}
             </button>
             <button
               onClick={() => setShowPasteBox(!showPasteBox)}
-              className="px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 font-medium text-xs sm:text-sm hover:bg-slate-50 transition-colors"
+              className="px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium text-xs sm:text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
             >
               {showPasteBox ? 'Hide Paste Box' : 'Paste Resume Text'}
             </button>
           </div>
 
-          <p className="text-[11px] text-slate-400">
+          <p className="text-[11px] text-slate-400 dark:text-slate-500">
             Privacy notice: Personal contact details (phone number, home address) are not required and are never shared.
           </p>
         </div>

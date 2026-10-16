@@ -83,6 +83,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <span className="hidden sm:inline-block text-[10px] font-semibold uppercase tracking-wider text-amber-900/80 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border border-amber-200/60 dark:border-amber-800/60 px-1.5 py-0.5 rounded">
                     Career Readiness
                   </span>
+                  {state.isDemoData && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/80 border border-amber-300 dark:border-amber-800 px-2 py-0.5 rounded-full">
+                      Sample Data Mode
+                    </span>
+                  )}
                 </div>
                 <p className="hidden md:block text-[11px] text-slate-500 dark:text-slate-400 font-normal">
                   Know what your projects prove. Discover what to improve next.

@@ -276,9 +276,17 @@ export async function fetchGitHubRepoDetails(rawOwner: string, rawRepo: string):
     lastAnalyzedCommit: latestCommit,
     latestCommit: latestCommit,
     hasUpdate: false,
+    reassessmentStatus: 'idle',
     analyzedFilesCount: fileList.length,
     fileList: fileList.slice(0, 200),
     sampleFiles,
+    analysisScope: {
+      examinedFilesCount: sampleFiles.length,
+      totalCandidateFilesCount: fileList.length,
+      isPartialScope: fileList.length > sampleFiles.length,
+      branch: defaultBranch,
+      commitSha: latestCommit.sha,
+    },
   };
 }
 

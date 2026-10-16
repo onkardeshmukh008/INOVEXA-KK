@@ -81,27 +81,71 @@ export const ChangeHistoryPage: React.FC<ChangeHistoryPageProps> = ({
       )}
 
       {/* CONNECTED REPOS COMMIT REVISION STATUS */}
-      <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs space-y-3">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-          Currently Monitored Repositories ({repositories.length})
-        </h2>
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 shadow-2xs space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+            Currently Monitored Repositories ({repositories.length})
+          </h2>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">
+            Truthful Commit Tracking & Status
+          </span>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-          {repositories.map((repo) => (
-            <div key={repo.id} className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
-              <div className="flex items-center justify-between font-semibold text-slate-900">
-                <span>{repo.owner}/{repo.repo}</span>
-                <span className="font-mono text-[11px] bg-white px-2 py-0.5 rounded border border-slate-200 text-slate-700">
-                  {repo.lastAnalyzedCommit.sha}
-                </span>
+          {repositories.map((repo) => {
+            const hasPendingUpdate = repo.hasUpdate || (repo.latestCommit && repo.latestCommit.sha !== repo.lastAnalyzedCommit.sha);
+
+            return (
+              <div key={repo.id} className="p-3.5 rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-2">
+                <div className="flex items-center justify-between font-semibold text-slate-900 dark:text-white">
+                  <span>{repo.owner}/{repo.repo}</span>
+                  <div className="flex items-center gap-1.5 font-mono text-[11px]">
+                    <span className="bg-white dark:bg-slate-700 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200" title="Last successfully assessed commit">
+                      assessed: {repo.lastAnalyzedCommit.sha}
+                    </span>
+                    {hasPendingUpdate && repo.latestCommit && (
+                      <span className="bg-amber-100 dark:bg-amber-950 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-300" title="Latest detected commit">
+                        latest: {repo.latestCommit.sha}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Status Badge */}
+                <div className="flex items-center gap-2">
+                  {repo.reassessmentStatus === 'failed' ? (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3 text-rose-600" /> Reassessment Failed (Pending Retry)
+                    </span>
+                  ) : repo.reassessmentStatus === 'manual_review_needed' ? (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-amber-600" /> Update Detected (Needs Target Job)
+                    </span>
+                  ) : hasPendingUpdate ? (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 border border-sky-200 dark:border-sky-800 flex items-center gap-1">
+                      <RefreshCw className="w-3 h-3 text-sky-600" /> New Commit Detected
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Assessed & Up-to-Date
+                    </span>
+                  )}
+                </div>
+
+                {repo.lastReassessmentError && (
+                  <p className="text-[11px] text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 p-2 rounded border border-rose-200 dark:border-rose-900">
+                    {repo.lastReassessmentError}
+                  </p>
+                )}
+
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                  &quot;{repo.lastAnalyzedCommit.message}&quot;
+                </p>
+                <p className="text-[10px] text-slate-400">
+                  Author: {repo.lastAnalyzedCommit.author} • {new Date(repo.lastAnalyzedCommit.date).toLocaleDateString()}
+                </p>
               </div>
-              <p className="text-[11px] text-slate-500 truncate">
-                Latest analyzed: "{repo.lastAnalyzedCommit.message}"
-              </p>
-              <p className="text-[10px] text-slate-400">
-                Author: {repo.lastAnalyzedCommit.author} • {new Date(repo.lastAnalyzedCommit.date).toLocaleDateString()}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 

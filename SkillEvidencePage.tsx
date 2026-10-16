@@ -82,8 +82,8 @@ export const SkillEvidencePage: React.FC<SkillEvidencePageProps> = ({
 
       {/* FINAL VERDICT SUMMARY CARD */}
       {verdict && (
-        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-2xs space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
             <div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                 Official Assessment Result
@@ -93,37 +93,48 @@ export const SkillEvidencePage: React.FC<SkillEvidencePageProps> = ({
               </div>
             </div>
 
-            <div className="text-left sm:text-right text-xs text-slate-500">
+            <div className="text-left sm:text-right text-xs text-slate-500 dark:text-slate-400">
               <p>Assessed on {new Date(verdict.assessedAt).toLocaleString()}</p>
-              <p className="font-mono text-[11px] text-slate-600 mt-0.5">
+              <p className="font-mono text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">
                 Formula: {verdict.scoreFormula}
               </p>
             </div>
           </div>
 
-          <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
+          <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-normal">
             {verdict.matchSummary}
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-            <div className="p-3 bg-emerald-50/50 rounded-lg border border-emerald-100 text-xs space-y-1">
-              <p className="font-bold text-emerald-900">Demonstrated Skills ({verdict.demonstratedSkills.length})</p>
-              <p className="text-emerald-800 text-[11px]">
+            <div className="p-3 bg-emerald-50/50 dark:bg-emerald-950/40 rounded-lg border border-emerald-100 dark:border-emerald-800 text-xs space-y-1">
+              <p className="font-bold text-emerald-900 dark:text-emerald-300">Demonstrated Skills ({verdict.demonstratedSkills.length})</p>
+              <p className="text-emerald-800 dark:text-emerald-400 text-[11px]">
                 {verdict.demonstratedSkills.join(', ') || 'None verified yet'}
               </p>
             </div>
 
-            <div className="p-3 bg-amber-50/50 rounded-lg border border-amber-100 text-xs space-y-1">
-              <p className="font-bold text-amber-900">Key Gaps & Opportunities ({verdict.gapSkills.length})</p>
-              <p className="text-amber-800 text-[11px]">
+            <div className="p-3 bg-amber-50/50 dark:bg-amber-950/40 rounded-lg border border-amber-100 dark:border-amber-800 text-xs space-y-1">
+              <p className="font-bold text-amber-900 dark:text-amber-300">Key Gaps & Opportunities ({verdict.gapSkills.length})</p>
+              <p className="text-amber-800 dark:text-amber-400 text-[11px]">
                 {verdict.gapSkills.join(', ') || 'No critical gaps identified'}
               </p>
             </div>
           </div>
 
+          {/* Transparent Repository Analysis Scope Disclosure */}
+          <div className="p-3.5 rounded-lg bg-sky-50/50 dark:bg-sky-950/30 border border-sky-100 dark:border-sky-900/60 text-[11px] space-y-1 text-sky-950 dark:text-sky-300">
+            <div className="flex items-center gap-1.5 font-bold">
+              <Info className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0" />
+              <span>Repository Analysis Scope & Verification Standards</span>
+            </div>
+            <p className="leading-relaxed">
+              Assessment examines prioritized repository files (routes, schemas, tests, configurations). We do not claim full codebase coverage unless all files were retrieved. All code citations reflect exact verified commits. Code presence proves implementation patterns in the repository, but does not certify individual authorship in shared public repositories.
+            </p>
+          </div>
+
           {/* Assessment limitations statement */}
-          <div className="pt-2 text-[11px] text-slate-500 border-t border-slate-100 space-y-1">
-            <p className="font-semibold text-slate-600">Important Assessment Limitations:</p>
+          <div className="pt-2 text-[11px] text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 space-y-1">
+            <p className="font-semibold text-slate-600 dark:text-slate-300">Important Assessment Limitations:</p>
             <ul className="list-disc list-inside space-y-0.5">
               {verdict.limitations.map((lim, idx) => (
                 <li key={idx}>{lim}</li>
@@ -354,6 +365,11 @@ export const SkillEvidencePage: React.FC<SkillEvidencePageProps> = ({
                               <p className="text-[11px] text-slate-600">
                                 <strong>Relevance:</strong> {cite.reason}
                               </p>
+                              {cite.authorshipDisclaimer && (
+                                <p className="text-[10px] text-slate-400 dark:text-slate-500 italic">
+                                  {cite.authorshipDisclaimer}
+                                </p>
+                              )}
                             </div>
                           ))
                         ) : (
