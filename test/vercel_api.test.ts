@@ -4,6 +4,7 @@ import type {Server} from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import {fetchAppState} from '../src/api.ts';
 
 test('Vercel API handler persists local state and requires Postgres in Vercel', async () => {
   const previousEnvironment = {
@@ -45,8 +46,12 @@ test('Vercel API handler persists local state and requires Postgres in Vercel', 
 
     process.env.VERCEL = '1';
     const missingDatabaseResponse = await fetch(`${baseUrl}/api/state`);
-    assert.equal(missingDatabaseResponse.status, 500);
-    assert.match((await missingDatabaseResponse.json()).error, /POSTGRES_URL or DATABASE_URL/);
+    assert.equal(missingDatabaseResponse.status, 503);
+    assert.match((await missingDatabaseResponse.json()).error, /configure POSTGRES_URL/);
+
+    const rejectedWriteResponse = await fetch(`${baseUrl}/api/clear-state`, {method: 'POST'});
+    assert.equal(rejectedWriteResponse.status, 503);
+    assert.match((await rejectedWriteResponse.json()).error, /configure POSTGRES_URL/);
   } finally {
     if (server?.listening) {
       await new Promise<void>((resolve, reject) => {
@@ -62,5 +67,26 @@ test('Vercel API handler persists local state and requires Postgres in Vercel', 
     if (previousEnvironment.dataDirectory === undefined) delete process.env.SKILLTRACE_DATA_DIR;
     else process.env.SKILLTRACE_DATA_DIR = previousEnvironment.dataDirectory;
     await rm(dataDirectory, {recursive: true, force: true});
+  }
+});
+
+test('frontend state client uses the same-domain API route and surfaces backend errors', async () => {
+  const originalFetch = globalThis.fetch;
+  let requestedUrl = '';
+  globalThis.fetch = async (input) => {
+    requestedUrl = String(input);
+    return new Response(JSON.stringify({
+      error: 'Application state is unavailable: configure POSTGRES_URL in Vercel.',
+    }), {
+      status: 503,
+      headers: {'Content-Type': 'application/json'},
+    });
+  };
+
+  try {
+    await assert.rejects(fetchAppState(), /configure POSTGRES_URL in Vercel/);
+    assert.equal(requestedUrl, '/api/state');
+  } finally {
+    globalThis.fetch = originalFetch;
   }
 });

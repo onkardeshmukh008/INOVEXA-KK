@@ -42,6 +42,10 @@ SkillTrace.ai uses AI and web technologies to support skill assessments, career 
 
 Keep API keys and other secret values private. Do not commit them to GitHub.
 
+### Vercel deployment
+
+Vercel serves the frontend from `dist` and the API from `api/[...path].ts`. Configure `POSTGRES_URL` (or `DATABASE_URL`) in the Vercel environment for persistent application state; without it, `/api/state` returns an explicit configuration error instead of relying on ephemeral files. Configure `GEMINI_API_KEY` server-side if AI features are needed. Neither variable is required to build the frontend.
+
 🔮 Our Vision
 
 We want to help students make better career decisions by understanding their skills, improving their knowledge, and staying consistent with their goals.

@@ -10,6 +10,13 @@ const __dirname = path.dirname(__filename);
 let databaseTableReady: Promise<void> | undefined;
 let databaseQuery: NeonQueryFunction<false, false> | undefined;
 
+export class StorageConfigurationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'StorageConfigurationError';
+  }
+}
+
 function getDataDirectory(): string {
   return path.resolve(process.env.SKILLTRACE_DATA_DIR || path.join(__dirname, '../data'));
 }
@@ -18,9 +25,11 @@ function getDatabase() {
   const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
   if (!connectionString) {
     if (process.env.VERCEL === '1') {
-      throw new Error('POSTGRES_URL or DATABASE_URL must be configured for durable state on Vercel.');
+      throw new StorageConfigurationError(
+        'Application state is unavailable: configure POSTGRES_URL (or DATABASE_URL) in the Vercel project environment and redeploy.'
+      );
     }
-    throw new Error('POSTGRES_URL or DATABASE_URL is required to use the database state store.');
+    throw new StorageConfigurationError('POSTGRES_URL or DATABASE_URL is required to use the database state store.');
   }
   databaseQuery ??= neon(connectionString);
   return databaseQuery;
