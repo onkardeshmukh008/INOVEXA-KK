@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import type { ResumeAssessment, ResumeClaim, ResumeData } from '../types/index.ts';
 import { uploadResumeFile, editResumeClaims, removeResume } from '../api.ts';
+import { AutomatedResumeAuditor } from '../components/AutomatedResumeAuditor.tsx';
 
 interface ResumePageProps {
   resume: ResumeData | null;
@@ -774,6 +775,9 @@ export const ResumePage: React.FC<ResumePageProps> = ({
               </div>
             );
           })()}
+
+          {/* AUTOMATED DEEPER RESUME AUDIT & INDUSTRY BENCHMARK */}
+          <AutomatedResumeAuditor resume={resume} onNavigateToProjects={onNavigateToProjects} />
 
           {/* IN-DEPTH DEVELOPMENT AREAS ANALYSIS & PROFESSIONAL RESUME GUIDE */}
           <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 sm:p-7 shadow-xs space-y-6">

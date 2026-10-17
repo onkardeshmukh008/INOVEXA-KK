@@ -16,6 +16,50 @@ import { ProfilePage } from './pages/ProfilePage.tsx';
 import { checkGitHubUpdates, fetchAppState, runAssessment } from './api.ts';
 import type { AppState } from './types/index.ts';
 import { Loader2, AlertCircle } from 'lucide-react';
+import type { AppNotification } from './components/NotificationCenter.tsx';
+
+const INITIAL_NOTIFICATIONS: AppNotification[] = [
+  {
+    id: 'n-1',
+    title: 'Resume Technical Analysis Available',
+    message: 'Run the Automated Resume Auditor to view specific terminology rewrites and ATS optimization feedback.',
+    type: 'insight',
+    timestamp: 'Just now',
+    read: false,
+    targetPage: 'resume',
+    actionLabel: 'Audit Resume',
+  },
+  {
+    id: 'n-2',
+    title: 'Verification Goal Streak: 3 Days',
+    message: 'You have 4 skill claims awaiting code proof. Connect a public GitHub repo to verify your Backend score.',
+    type: 'reminder',
+    timestamp: '2 hours ago',
+    read: false,
+    targetPage: 'projects',
+    actionLabel: 'Add Repository',
+  },
+  {
+    id: 'n-3',
+    title: 'Skill Evidence Report Updated',
+    message: 'SkillTrace engine verified 10+ repository files and commits. Reassessment ready for target job profile.',
+    type: 'commit',
+    timestamp: '1 day ago',
+    read: false,
+    targetPage: 'evidence',
+    actionLabel: 'View Evidence',
+  },
+  {
+    id: 'n-4',
+    title: 'Career Readiness Index Milestone',
+    message: 'Your Readiness Index baseline is 82%. Complete 2 high-priority action items to unlock senior match status.',
+    type: 'milestone',
+    timestamp: '2 days ago',
+    read: true,
+    targetPage: 'action-plan',
+    actionLabel: 'View Action Plan',
+  },
+];
 
 export default function App() {
   const [state, setState] = useState<AppState | null>(null);
@@ -53,7 +97,7 @@ export default function App() {
     } catch {}
   };
 
-  // Splash Screen & Authentication State
+// Splash Screen & Authentication State
   const [showSplash, setShowSplash] = useState<boolean>(true);
   const [authUser, setAuthUser] = useState<AuthUser | null>(() => {
     try {
@@ -63,6 +107,39 @@ export default function App() {
       return null;
     }
   });
+
+  const [notifications, setNotifications] = useState<AppNotification[]>(() => {
+    try {
+      const saved = localStorage.getItem('skilltrace_notifications');
+      return saved ? JSON.parse(saved) : INITIAL_NOTIFICATIONS;
+    } catch {
+      return INITIAL_NOTIFICATIONS;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('skilltrace_notifications', JSON.stringify(notifications));
+    } catch {}
+  }, [notifications]);
+
+  const handleMarkNotificationAsRead = (id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+  };
+
+  const handleMarkAllNotificationsAsRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  };
+
+  const handleClearAllNotifications = () => {
+    setNotifications([]);
+  };
+
+  const handleDismissNotification = (id: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  };
 
   const loadState = async () => {
     try {
@@ -221,6 +298,12 @@ export default function App() {
         onNavigateToProfile={() => setCurrentPage('profile')}
         theme={theme}
         onToggleTheme={handleToggleTheme}
+        notifications={notifications}
+        onMarkNotificationAsRead={handleMarkNotificationAsRead}
+        onMarkAllNotificationsAsRead={handleMarkAllNotificationsAsRead}
+        onClearAllNotifications={handleClearAllNotifications}
+        onDismissNotification={handleDismissNotification}
+        onNavigatePage={(page) => setCurrentPage(page)}
       />
 
       {/* Main Layout: Sidebar + Active Page */}
@@ -320,8 +403,23 @@ export default function App() {
           {currentPage === 'settings' && (
             <SettingsPage
               settings={state.settings}
+              state={state}
+              authUser={authUser}
               onRefreshState={loadState}
               onNavigateToDashboard={() => setCurrentPage('dashboard')}
+              onSendDigestNotification={(msg) => {
+                const newNotif: AppNotification = {
+                  id: `n-digest-${Date.now()}`,
+                  title: 'Weekly Email Digest Sent',
+                  message: msg,
+                  type: 'insight',
+                  timestamp: 'Just now',
+                  read: false,
+                  targetPage: 'settings',
+                  actionLabel: 'View Settings',
+                };
+                setNotifications((prev) => [newNotif, ...prev]);
+              }}
             />
           )}
         </main>

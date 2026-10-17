@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Settings as SettingsIcon,
   Shield,
@@ -12,23 +12,69 @@ import {
   Lock,
   EyeOff,
   Sparkles,
+  Mail,
+  Send,
+  Bell,
+  Check,
 } from 'lucide-react';
 import type { AppSettings, AppState } from '../types/index.ts';
+import type { AuthUser } from '../pages/LoginPage.tsx';
 import { clearAllState, resetToSample } from '../api.ts';
+import {
+  EmailDigestSettings,
+  DigestEmailContent,
+  getEmailDigestSettings,
+  saveEmailDigestSettings,
+  generateMockDigestEmail,
+} from '../services/emailDigestService.ts';
+import { MockEmailPreviewModal } from '../components/MockEmailPreviewModal.tsx';
 
 interface SettingsPageProps {
   settings: AppSettings;
+  state: AppState;
+  authUser?: AuthUser | null;
   onRefreshState: () => void;
   onNavigateToDashboard: () => void;
+  onSendDigestNotification?: (msg: string) => void;
 }
 
 export const SettingsPage: React.FC<SettingsPageProps> = ({
   settings,
+  state,
+  authUser,
   onRefreshState,
   onNavigateToDashboard,
+  onSendDigestNotification,
 }) => {
   const [localSettings, setLocalSettings] = useState<AppSettings>(settings);
   const [message, setMessage] = useState<string | null>(null);
+
+  // Email Digest Subscription State
+  const [digestSettings, setDigestSettings] = useState<EmailDigestSettings>(() =>
+    getEmailDigestSettings(authUser)
+  );
+  const [activeDigestEmail, setActiveDigestEmail] = useState<DigestEmailContent | null>(null);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+
+  useEffect(() => {
+    saveEmailDigestSettings(digestSettings);
+  }, [digestSettings]);
+
+  const handleToggleSubscribed = () => {
+    const next = !digestSettings.subscribed;
+    setDigestSettings((prev) => ({ ...prev, subscribed: next }));
+    setMessage(next ? 'Subscribed to Weekly Career Readiness Email Digest!' : 'Unsubscribed from Email Digest updates.');
+  };
+
+  const handleSendTestEmail = () => {
+    const generated = generateMockDigestEmail(state, digestSettings, authUser);
+    setActiveDigestEmail(generated);
+    setShowEmailModal(true);
+    setMessage(`Mock email digest dispatch test initiated for ${generated.recipient}.`);
+    if (onSendDigestNotification) {
+      onSendDigestNotification(`Mock Weekly Readiness Digest Email dispatched to ${generated.recipient}`);
+    }
+  };
 
   const handleResetSample = async () => {
     if (
@@ -130,6 +176,138 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         </div>
       </div>
 
+      {/* WEEKLY CAREER READINESS EMAIL DIGEST CARD */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-2xs space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Mail className="w-5 h-5 text-amber-500" />
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                Weekly Career Readiness Email Digest
+              </h2>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-300">
+              Receive an automated weekly email summarizing your verified code progress, skill readiness index, and action exercises.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleToggleSubscribed}
+            className={`px-4 py-2 rounded-xl font-bold text-xs transition-colors flex items-center gap-2 shrink-0 ${
+              digestSettings.subscribed
+                ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
+            }`}
+          >
+            {digestSettings.subscribed ? (
+              <>
+                <Check className="w-4 h-4 text-emerald-600" />
+                <span>Subscribed to Weekly Digest</span>
+              </>
+            ) : (
+              <span>Digest Paused (Click to Subscribe)</span>
+            )}
+          </button>
+        </div>
+
+        {digestSettings.subscribed && (
+          <div className="space-y-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Recipient Email Address
+                </label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    value={digestSettings.email}
+                    onChange={(e) =>
+                      setDigestSettings((prev) => ({ ...prev, email: e.target.value }))
+                    }
+                    placeholder="developer@example.com"
+                    className="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Delivery Cadence
+                </label>
+                <select
+                  value={digestSettings.frequency}
+                  onChange={(e) =>
+                    setDigestSettings((prev) => ({
+                      ...prev,
+                      frequency: e.target.value as any,
+                    }))
+                  }
+                  className="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                >
+                  <option value="weekly">Weekly (Every Monday morning)</option>
+                  <option value="biweekly">Bi-Weekly (Every 2 weeks)</option>
+                  <option value="monthly">Monthly Summary</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+              <span className="font-bold text-slate-800 dark:text-slate-200 block">
+                Digest Email Content Preferences:
+              </span>
+              <div className="flex flex-wrap gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={digestSettings.includeSkillGrowth}
+                    onChange={(e) =>
+                      setDigestSettings((prev) => ({
+                        ...prev,
+                        includeSkillGrowth: e.target.checked,
+                      }))
+                    }
+                    className="rounded text-amber-600 focus:ring-amber-500"
+                  />
+                  <span>Include Weekly Code Skill Growth & Commit Verification</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={digestSettings.includeWeakTopics}
+                    onChange={(e) =>
+                      setDigestSettings((prev) => ({
+                        ...prev,
+                        includeWeakTopics: e.target.checked,
+                      }))
+                    }
+                    className="rounded text-amber-600 focus:ring-amber-500"
+                  />
+                  <span>Include High-Priority Career Action Items</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Test Email Dispatch CTA */}
+            <div className="pt-1 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Mock Service: Simulates email rendering and dispatches an interactive email preview.
+              </p>
+
+              <button
+                type="button"
+                onClick={handleSendTestEmail}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold transition-all shadow-xs shrink-0"
+              >
+                <Send className="w-4 h-4" />
+                <span>Send & Preview Mock Digest Email</span>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* PRIVACY & SECURITY DECLARATION */}
       <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs space-y-4">
         <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
@@ -198,6 +376,15 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
           </button>
         </div>
       </div>
+
+      {/* MOCK EMAIL PREVIEW MODAL */}
+      {showEmailModal && activeDigestEmail && (
+        <MockEmailPreviewModal
+          digest={activeDigestEmail}
+          onClose={() => setShowEmailModal(false)}
+          onNavigateToDashboard={onNavigateToDashboard}
+        />
+      )}
     </div>
   );
 };

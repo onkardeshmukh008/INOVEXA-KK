@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import type { AppState } from '../types/index.ts';
 import { SkillTraceLogo } from './SkillTraceLogo.tsx';
+import { NotificationCenter, AppNotification } from './NotificationCenter.tsx';
+import type { PageId } from './Sidebar.tsx';
 import type { AuthUser } from '../pages/LoginPage.tsx';
 
 interface NavbarProps {
@@ -31,6 +33,12 @@ interface NavbarProps {
   onNavigateToProfile?: () => void;
   theme?: 'light' | 'dark';
   onToggleTheme?: () => void;
+  notifications?: AppNotification[];
+  onMarkNotificationAsRead?: (id: string) => void;
+  onMarkAllNotificationsAsRead?: () => void;
+  onClearAllNotifications?: () => void;
+  onDismissNotification?: (id: string) => void;
+  onNavigatePage?: (page: PageId) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -47,6 +55,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigateToProfile,
   theme,
   onToggleTheme,
+  notifications = [],
+  onMarkNotificationAsRead = () => {},
+  onMarkAllNotificationsAsRead = () => {},
+  onClearAllNotifications = () => {},
+  onDismissNotification = () => {},
+  onNavigatePage = () => {},
 }) => {
   const hasResume = Boolean(state.resume);
   const repoCount = state.repositories.filter((r) => r.selectedForAssessment).length;
@@ -131,6 +145,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Play className={`w-3.5 h-3.5 text-amber-400 fill-amber-400 ${isAssessing ? 'animate-pulse' : ''}`} />
               <span>{isAssessing ? 'Analyzing...' : 'Assess Match'}</span>
             </button>
+
+            {/* Notification Center */}
+            <NotificationCenter
+              notifications={notifications}
+              onMarkAsRead={onMarkNotificationAsRead}
+              onMarkAllAsRead={onMarkAllNotificationsAsRead}
+              onClearAll={onClearAllNotifications}
+              onDismiss={onDismissNotification}
+              onNavigate={onNavigatePage}
+            />
 
             {/* Quick Dark Mode Switch */}
             {onToggleTheme && (
