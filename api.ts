@@ -9,12 +9,91 @@ import type {
   StandaloneRepoAssessment,
 } from './types/index.ts';
 
-export async function fetchAppState(): Promise<AppState> {
-  const res = await fetch('/api/state');
-  if (!res.ok) {
-    throw new Error('Failed to load application state');
+/**
+ * Universal safe API fetch wrapper with user-friendly error formatting
+ * for network errors, rate limits, authentication issues, and server status codes.
+ */
+async function fetchJson<T = any>(
+  url: string,
+  options?: RequestInit,
+  fallbackErrorMessage = 'API request failed'
+): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetch(url, options);
+  } catch (netErr: any) {
+    console.error(`Network error requesting ${url}:`, netErr);
+    if (!navigator.onLine) {
+      throw new Error('You appear to be offline. Please check your internet connection and try again.');
+    }
+    throw new Error('Unable to connect to SkillTrace server. Please verify your connection or refresh the page.');
   }
-  return res.json();
+
+  let data: any = {};
+  try {
+    const text = await response.text();
+    if (text) {
+      data = JSON.parse(text);
+    }
+  } catch (parseErr) {
+    console.warn(`Non-JSON response from ${url}:`, parseErr);
+  }
+
+  if (!response.ok) {
+    const status = response.status;
+    const serverMessage = data.error || data.message;
+
+    if (status === 429) {
+      const err: any = new Error(
+        serverMessage || 'GitHub or AI rate limit exceeded. Please wait a moment before trying again.'
+      );
+      err.status = status;
+      throw err;
+    }
+
+    if (status === 403) {
+      const err: any = new Error(
+        serverMessage || 'Access forbidden or rate limit reached. If accessing a repository, ensure it is public.'
+      );
+      err.status = status;
+      throw err;
+    }
+
+    if (status === 401) {
+      const err: any = new Error(
+        serverMessage || 'Authentication session expired. Please sign in again.'
+      );
+      err.status = status;
+      throw err;
+    }
+
+    if (status === 404) {
+      const err: any = new Error(
+        serverMessage || 'The requested resource or repository could not be found.'
+      );
+      err.status = status;
+      throw err;
+    }
+
+    if (status >= 500) {
+      const err: any = new Error(
+        serverMessage || 'Server error encountered. Our services are recovering, please retry.'
+      );
+      err.status = status;
+      throw err;
+    }
+
+    const err: any = new Error(serverMessage || fallbackErrorMessage);
+    err.status = status;
+    err.needsManualPaste = data.needsManualPaste;
+    throw err;
+  }
+
+  return data as T;
+}
+
+export async function fetchAppState(): Promise<AppState> {
+  return fetchJson<AppState>('/api/state', undefined, 'Failed to load application state.');
 }
 
 export async function uploadResumeFile(params: {
@@ -24,16 +103,11 @@ export async function uploadResumeFile(params: {
   fileSize?: number;
   mimeType?: string;
 }): Promise<{ success: boolean; resume: ResumeData; assessment?: ResumeAssessment }> {
-  const res = await fetch('/api/resume/upload', {
+  return fetchJson('/api/resume/upload', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params),
-  });
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.error || 'Failed to parse resume');
-  }
-  return data;
+  }, 'Failed to parse resume document.');
 }
 
 export async function assessStandaloneGitHubRepo(params: {
@@ -46,35 +120,26 @@ export async function assessStandaloneGitHubRepo(params: {
   repository: GitHubRepo;
   repositories: GitHubRepo[];
 }> {
-  const res = await fetch('/api/github/assess-standalone', {
+  return fetchJson('/api/github/assess-standalone', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to assess repository');
-  return data;
+  }, 'Failed to inspect and assess GitHub repository.');
 }
 
 export async function editResumeClaims(params: {
   claims?: ResumeClaim[];
   profile?: any;
 }): Promise<{ success: boolean; resume: ResumeData }> {
-  const res = await fetch('/api/resume/edit-claims', {
+  return fetchJson('/api/resume/edit-claims', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to update resume claims');
-  return data;
+  }, 'Failed to update resume claims.');
 }
 
 export async function removeResume(): Promise<{ success: boolean }> {
-  const res = await fetch('/api/resume', { method: 'DELETE' });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to remove resume');
-  return data;
+  return fetchJson('/api/resume', { method: 'DELETE' }, 'Failed to remove resume.');
 }
 
 export async function addGitHubRepo(url: string): Promise<{
@@ -82,32 +147,23 @@ export async function addGitHubRepo(url: string): Promise<{
   repository: GitHubRepo;
   repositories: GitHubRepo[];
 }> {
-  const res = await fetch('/api/github/add-repo', {
+  return fetchJson('/api/github/add-repo', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ url }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to add repository');
-  return data;
+  }, 'Failed to add GitHub repository.');
 }
 
 export async function deleteGitHubRepo(
   id: string
 ): Promise<{ success: boolean; repositories: GitHubRepo[] }> {
-  const res = await fetch(`/api/github/repo/${id}`, { method: 'DELETE' });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to delete repository');
-  return data;
+  return fetchJson(`/api/github/repo/${id}`, { method: 'DELETE' }, 'Failed to delete repository.');
 }
 
 export async function toggleRepoAssessment(
   id: string
 ): Promise<{ success: boolean; repository: GitHubRepo; repositories: GitHubRepo[] }> {
-  const res = await fetch(`/api/github/repo/${id}/toggle`, { method: 'PATCH' });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to toggle repository selection');
-  return data;
+  return fetchJson(`/api/github/repo/${id}/toggle`, { method: 'PATCH' }, 'Failed to toggle repository selection.');
 }
 
 export async function parseOrSaveJob(params: {
@@ -115,18 +171,11 @@ export async function parseOrSaveJob(params: {
   description?: string;
   title?: string;
 }): Promise<{ success: boolean; job: JobRequirement }> {
-  const res = await fetch('/api/job/parse', {
+  return fetchJson('/api/job/parse', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params),
-  });
-  const data = await res.json();
-  if (!res.ok) {
-    const error: any = new Error(data.error || 'Failed to parse job');
-    error.needsManualPaste = data.needsManualPaste;
-    throw error;
-  }
-  return data;
+  }, 'Failed to parse job description.');
 }
 
 export async function updateJobSkills(params: {
@@ -134,54 +183,36 @@ export async function updateJobSkills(params: {
   title?: string;
   company?: string;
 }): Promise<{ success: boolean; job: JobRequirement }> {
-  const res = await fetch('/api/job/update-skills', {
+  return fetchJson('/api/job/update-skills', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to update job skills');
-  return data;
+  }, 'Failed to update job requirements.');
 }
 
 export async function runAssessment(): Promise<any> {
-  const res = await fetch('/api/assess', { method: 'POST' });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to run assessment');
-  return data;
+  return fetchJson('/api/assess', { method: 'POST' }, 'Failed to run full skill assessment.');
 }
 
 export async function checkGitHubUpdates(): Promise<any> {
-  const res = await fetch('/api/github/check-updates', { method: 'POST' });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to check GitHub updates');
-  return data;
+  return fetchJson('/api/github/check-updates', { method: 'POST' }, 'Failed to check GitHub commit updates.');
 }
 
 export async function togglePlanTask(
   planId: string,
   taskId: string
 ): Promise<{ success: boolean; actionPlan: any[] }> {
-  const res = await fetch('/api/action-plan/toggle-task', {
+  return fetchJson('/api/action-plan/toggle-task', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ planId, taskId }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to toggle action item');
-  return data;
+  }, 'Failed to update action plan item.');
 }
 
 export async function resetToSample(): Promise<{ success: boolean; state: AppState }> {
-  const res = await fetch('/api/seed-sample', { method: 'POST' });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to reset sample state');
-  return data;
+  return fetchJson('/api/seed-sample', { method: 'POST' }, 'Failed to reset sample state.');
 }
 
 export async function clearAllState(): Promise<{ success: boolean; state: AppState }> {
-  const res = await fetch('/api/clear-state', { method: 'POST' });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to clear state');
-  return data;
+  return fetchJson('/api/clear-state', { method: 'POST' }, 'Failed to clear application state.');
 }

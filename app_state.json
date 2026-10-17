@@ -1,138 +1,51 @@
 {
-  "resume": {
-    "fileName": "Sample_Candidate_Profile.pdf",
-    "fileSize": 45000,
-    "uploadedAt": "2026-10-16T22:50:48.146Z",
-    "rawText": "Sample Demo Candidate. Full-Stack Engineer with Node.js and TypeScript background.",
-    "profile": {
-      "fullName": "Demo Candidate Profile",
-      "headline": "Full-Stack Software Engineer (Sample Demonstration)",
-      "summary": "This is sample demonstration data illustrating how SkillTrace.ai verifies real GitHub code against resume claims. Upload your own resume to see personalized results.",
-      "education": [
-        {
-          "institution": "Sample University",
-          "degree": "B.S. in Computer Science",
-          "year": "2024"
-        }
-      ],
-      "workExperience": [
-        {
-          "role": "Software Engineering Intern",
-          "company": "Tech Demo Corp",
-          "period": "Summer 2023",
-          "highlights": [
-            "Developed RESTful endpoints with TypeScript and Express",
-            "Collaborated on database query optimizations and testing"
-          ]
-        }
-      ],
-      "projects": [
-        {
-          "name": "Web Service Architecture",
-          "description": "Modular Node.js and Express server with automated testing.",
-          "technologies": [
-            "TypeScript",
-            "Express",
-            "Jest",
-            "PostgreSQL"
-          ]
-        }
-      ],
-      "technicalSkills": [
-        "TypeScript",
-        "JavaScript",
-        "Node.js",
-        "PostgreSQL",
-        "Jest"
-      ],
-      "toolsAndFrameworks": [
-        "Express",
-        "Prisma",
-        "Git"
-      ],
-      "databases": [
-        "PostgreSQL"
-      ],
-      "testingTools": [
-        "Jest",
-        "Supertest"
-      ],
-      "deploymentTools": [
-        "GitHub Actions",
-        "Docker"
-      ],
-      "certifications": []
-    },
-    "claims": [
+  "resume": null,
+  "resumeAssessment": null,
+  "standaloneRepoAssessment": {
+    "repoName": "express",
+    "owner": "expressjs",
+    "url": "https://github.com/expressjs/express",
+    "architectureScore": 72,
+    "qualityRating": "Prototype / Early Stage",
+    "summary": "Standalone technical analysis for expressjs/express. Evaluated code files, dependencies, and commit hygiene.",
+    "detectedTechnologies": [
+      "JavaScript",
+      "Git"
+    ],
+    "demonstratedStrengths": [
       {
-        "id": "c-demo-1",
-        "skill": "TypeScript & JavaScript",
-        "category": "Languages",
-        "source": "explicit_list",
-        "context": "Proficient in TypeScript and JavaScript"
-      },
-      {
-        "id": "c-demo-2",
-        "skill": "RESTful API Engineering",
-        "category": "Backend",
-        "source": "project_description",
-        "context": "Designed REST endpoints and route middleware"
-      },
-      {
-        "id": "c-demo-3",
-        "skill": "Automated Testing",
-        "category": "Quality Assurance",
-        "source": "project_description",
-        "context": "Authored automated unit and integration tests"
-      },
-      {
-        "id": "c-demo-4",
-        "skill": "PostgreSQL & Relational DBs",
-        "category": "Databases",
-        "source": "explicit_list",
-        "context": "Worked with PostgreSQL databases"
-      },
-      {
-        "id": "c-demo-5",
-        "skill": "CI/CD Pipelines",
-        "category": "DevOps",
-        "source": "work_experience",
-        "context": "Configured automated CI workflows"
-      }
-    ]
-  },
-  "resumeAssessment": {
-    "overallScore": 78,
-    "rating": "Solid Profile",
-    "summary": "Sample profile evaluated across 5 technical claims. Shows foundational backend and language evidence, with database and testing areas requiring additional project backing.",
-    "totalClaimsCount": 5,
-    "weakTopics": [
-      {
-        "topic": "PostgreSQL & Relational DBs",
-        "reason": "Claimed in resume, but missing schema models or migrations in projects.",
-        "severity": "High"
-      },
-      {
-        "topic": "Docker & Containerization",
-        "reason": "No Dockerfile or container configuration found in project files.",
-        "severity": "Medium"
+        "title": "Structured Code Base",
+        "description": "Active JavaScript code implementation with commit history.",
+        "evidenceFile": ".editorconfig"
       }
     ],
-    "topStrengths": [
-      "Core language proficiency in TypeScript and JavaScript",
-      "Demonstrated RESTful API routing architecture in Express"
+    "weakTopicsAndGaps": [
+      {
+        "topic": "Automated Test Suite",
+        "impact": "High",
+        "description": "No automated unit or integration tests were detected in this repository.",
+        "recommendedFix": "Create a tests/ directory with Jest or Vitest test suites."
+      },
+      {
+        "topic": "Database Schema & Query Handling",
+        "impact": "Medium",
+        "description": "Repository does not include explicit database models or SQL migration scripts.",
+        "recommendedFix": "Add database schema definitions or sample queries."
+      },
+      {
+        "topic": "Containerization & DevOps Configuration",
+        "impact": "Low",
+        "description": "Missing Dockerfile or reproducible container environment.",
+        "recommendedFix": "Add a multi-stage Dockerfile and docker-compose.yml file."
+      }
     ],
-    "recommendedProjectEvidence": [
-      "Add PostgreSQL schema definitions or Prisma migrations to a connected repository.",
-      "Add containerization manifests (Dockerfile) to complete deployment proof."
+    "actionItems": [
+      "Add integration tests verifying primary controller logic.",
+      "Include CI workflow configuration for automated builds."
     ],
-    "claimBreakdown": {
-      "explicitList": 2,
-      "projectDescriptions": 2,
-      "workExperience": 1
-    }
+    "assessedCommitSha": "a419aa7",
+    "assessedAt": "2026-10-16T22:21:27.160Z"
   },
-  "standaloneRepoAssessment": null,
   "repositories": [
     {
       "id": "repo-expressjs-express",
@@ -142,35 +55,224 @@
       "defaultBranch": "master",
       "description": "Fast, unopinionated, minimalist web framework for node.",
       "language": "JavaScript",
-      "stars": 65000,
-      "forks": 15000,
+      "stars": 69572,
+      "forks": 25248,
       "selectedForAssessment": true,
       "lastAnalyzedCommit": {
         "sha": "a419aa7",
-        "message": "Update dependencies and tests",
-        "date": "2026-10-16T22:50:48.146Z",
-        "author": "express-maintainer"
+        "message": "Revert \"build(deps-dev): bump supertest from 6.3.0 to 7.3.0 (#7494)\" (#7518)",
+        "date": "2026-10-09T16:24:38Z",
+        "author": "krzysdz"
       },
       "latestCommit": {
         "sha": "a419aa7",
-        "message": "Update dependencies and tests",
-        "date": "2026-10-16T22:50:48.146Z",
-        "author": "express-maintainer"
+        "message": "Revert \"build(deps-dev): bump supertest from 6.3.0 to 7.3.0 (#7494)\" (#7518)",
+        "date": "2026-10-09T16:24:38Z",
+        "author": "krzysdz"
       },
       "hasUpdate": false,
-      "reassessmentStatus": "idle",
       "analyzedFilesCount": 214,
       "fileList": [
-        "package.json",
+        ".editorconfig",
+        ".eslintignore",
+        ".eslintrc.yml",
+        ".github/dependabot.yml",
+        ".github/workflows/ci.yml",
+        ".github/workflows/codeql.yml",
+        ".github/workflows/legacy.yml",
+        ".github/workflows/npm-publish.yml",
+        ".github/workflows/scorecard.yml",
+        ".gitignore",
+        ".npmrc",
+        "History.md",
+        "LICENSE",
+        "Readme.md",
+        "examples/README.md",
+        "examples/auth/index.js",
+        "examples/auth/views/foot.ejs",
+        "examples/auth/views/head.ejs",
+        "examples/auth/views/login.ejs",
+        "examples/content-negotiation/db.js",
+        "examples/content-negotiation/index.js",
+        "examples/content-negotiation/users.js",
+        "examples/cookie-sessions/index.js",
+        "examples/cookies/index.js",
+        "examples/downloads/files/CCTV大赛上海分赛区.txt",
+        "examples/downloads/files/amazing.txt",
+        "examples/downloads/files/notes/groceries.txt",
+        "examples/downloads/index.js",
+        "examples/ejs/index.js",
+        "examples/ejs/public/stylesheets/style.css",
+        "examples/ejs/views/footer.html",
+        "examples/ejs/views/header.html",
+        "examples/ejs/views/users.html",
+        "examples/error-pages/index.js",
+        "examples/error-pages/views/404.ejs",
+        "examples/error-pages/views/500.ejs",
+        "examples/error-pages/views/error_header.ejs",
+        "examples/error-pages/views/footer.ejs",
+        "examples/error-pages/views/index.ejs",
+        "examples/error/index.js",
+        "examples/hello-world/index.js",
+        "examples/markdown/index.js",
+        "examples/markdown/views/index.md",
+        "examples/multi-router/controllers/api_v1.js",
+        "examples/multi-router/controllers/api_v2.js",
+        "examples/multi-router/index.js",
+        "examples/mvc/controllers/main/index.js",
+        "examples/mvc/controllers/pet/index.js",
+        "examples/mvc/controllers/pet/views/edit.ejs",
+        "examples/mvc/controllers/pet/views/show.ejs",
+        "examples/mvc/controllers/user-pet/index.js",
+        "examples/mvc/controllers/user/index.js",
+        "examples/mvc/controllers/user/views/edit.hbs",
+        "examples/mvc/controllers/user/views/list.hbs",
+        "examples/mvc/controllers/user/views/show.hbs",
+        "examples/mvc/db.js",
+        "examples/mvc/index.js",
+        "examples/mvc/lib/boot.js",
+        "examples/mvc/public/style.css",
+        "examples/mvc/views/404.ejs",
+        "examples/mvc/views/5xx.ejs",
+        "examples/online/index.js",
+        "examples/params/index.js",
+        "examples/resource/index.js",
+        "examples/route-map/index.js",
+        "examples/route-middleware/index.js",
+        "examples/route-separation/index.js",
+        "examples/route-separation/post.js",
+        "examples/route-separation/public/style.css",
+        "examples/route-separation/site.js",
+        "examples/route-separation/user.js",
+        "examples/route-separation/views/footer.ejs",
+        "examples/route-separation/views/header.ejs",
+        "examples/route-separation/views/index.ejs",
+        "examples/route-separation/views/posts/index.ejs",
+        "examples/route-separation/views/users/edit.ejs",
+        "examples/route-separation/views/users/index.ejs",
+        "examples/route-separation/views/users/view.ejs",
+        "examples/search/index.js",
+        "examples/search/public/client.js",
+        "examples/search/public/index.html",
+        "examples/session/index.js",
+        "examples/session/redis.js",
+        "examples/static-files/index.js",
+        "examples/static-files/public/css/style.css",
+        "examples/static-files/public/hello.txt",
+        "examples/static-files/public/js/app.js",
+        "examples/vhost/index.js",
+        "examples/view-constructor/github-view.js",
+        "examples/view-constructor/index.js",
+        "examples/view-locals/index.js",
+        "examples/view-locals/user.js",
+        "examples/view-locals/views/index.ejs",
+        "examples/web-service/index.js",
+        "index.js",
         "lib/application.js",
         "lib/express.js",
         "lib/request.js",
         "lib/response.js",
-        "lib/router/index.js",
+        "lib/utils.js",
+        "lib/view.js",
+        "package.json",
         "test/Route.js",
+        "test/Router.js",
+        "test/acceptance/auth.js",
+        "test/acceptance/content-negotiation.js",
+        "test/acceptance/cookie-sessions.js",
+        "test/acceptance/cookies.js",
+        "test/acceptance/downloads.js",
+        "test/acceptance/ejs.js",
+        "test/acceptance/error-pages.js",
+        "test/acceptance/error.js",
+        "test/acceptance/hello-world.js",
+        "test/acceptance/markdown.js",
+        "test/acceptance/multi-router.js",
+        "test/acceptance/mvc.js",
+        "test/acceptance/params.js",
+        "test/acceptance/resource.js",
+        "test/acceptance/route-map.js",
+        "test/acceptance/route-separation.js",
+        "test/acceptance/vhost.js",
+        "test/acceptance/web-service.js",
+        "test/app.all.js",
+        "test/app.engine.js",
+        "test/app.head.js",
         "test/app.js",
-        ".github/workflows/ci.yml",
-        "Readme.md"
+        "test/app.listen.js",
+        "test/app.locals.js",
+        "test/app.options.js",
+        "test/app.param.js",
+        "test/app.render.js",
+        "test/app.request.js",
+        "test/app.response.js",
+        "test/app.route.js",
+        "test/app.router.js",
+        "test/app.routes.error.js",
+        "test/app.use.js",
+        "test/config.js",
+        "test/exports.js",
+        "test/express.json.js",
+        "test/express.raw.js",
+        "test/express.static.js",
+        "test/express.text.js",
+        "test/express.urlencoded.js",
+        "test/fixtures/% of dogs.txt",
+        "test/fixtures/.name",
+        "test/fixtures/blog/index.html",
+        "test/fixtures/blog/post/index.tmpl",
+        "test/fixtures/broken.send",
+        "test/fixtures/default_layout/name.tmpl",
+        "test/fixtures/default_layout/user.tmpl",
+        "test/fixtures/email.tmpl",
+        "test/fixtures/empty.txt",
+        "test/fixtures/local_layout/user.tmpl",
+        "test/fixtures/name.tmpl",
+        "test/fixtures/name.txt",
+        "test/fixtures/nums.txt",
+        "test/fixtures/pets/names.txt",
+        "test/fixtures/snow ☃/.gitkeep",
+        "test/fixtures/todo.html",
+        "test/fixtures/todo.txt",
+        "test/fixtures/user.html",
+        "test/fixtures/user.tmpl",
+        "test/fixtures/users/index.html",
+        "test/fixtures/users/tobi.txt",
+        "test/middleware.basic.js",
+        "test/regression.js",
+        "test/req.accepts.js",
+        "test/req.acceptsCharsets.js",
+        "test/req.acceptsEncodings.js",
+        "test/req.acceptsLanguages.js",
+        "test/req.baseUrl.js",
+        "test/req.fresh.js",
+        "test/req.get.js",
+        "test/req.host.js",
+        "test/req.hostname.js",
+        "test/req.ip.js",
+        "test/req.ips.js",
+        "test/req.is.js",
+        "test/req.path.js",
+        "test/req.protocol.js",
+        "test/req.query.js",
+        "test/req.range.js",
+        "test/req.route.js",
+        "test/req.secure.js",
+        "test/req.signedCookies.js",
+        "test/req.stale.js",
+        "test/req.subdomains.js",
+        "test/req.xhr.js",
+        "test/res.append.js",
+        "test/res.attachment.js",
+        "test/res.clearCookie.js",
+        "test/res.cookie.js",
+        "test/res.download.js",
+        "test/res.format.js",
+        "test/res.get.js",
+        "test/res.json.js",
+        "test/res.jsonp.js",
+        "test/res.links.js",
+        "test/res.locals.js"
       ],
       "sampleFiles": [
         {
@@ -179,318 +281,393 @@
           "category": "test"
         },
         {
-          "path": "package.json",
+          "path": "test/Router.js",
           "size": 1024,
-          "category": "config"
+          "category": "test"
         },
         {
-          "path": ".github/workflows/ci.yml",
+          "path": "test/acceptance/auth.js",
           "size": 1024,
-          "category": "config"
+          "category": "test"
         },
         {
-          "path": "lib/router/index.js",
+          "path": "test/acceptance/content-negotiation.js",
           "size": 1024,
-          "category": "code"
-        }
-      ],
-      "analysisScope": {
-        "examinedFilesCount": 4,
-        "totalCandidateFilesCount": 10,
-        "isPartialScope": true,
-        "branch": "master",
-        "commitSha": "a419aa7"
-      }
-    }
-  ],
-  "job": {
-    "id": "job-demo-fullstack",
-    "title": "Full-Stack Software Engineer (Demo)",
-    "company": "Veloce Digital Systems (Demo Posting)",
-    "sourceUrl": "https://example.com/careers/fullstack-demo",
-    "rawDescription": "We are hiring a Full-Stack Engineer skilled in TypeScript, Node.js API development, PostgreSQL, automated testing, and Docker containerization.",
-    "retrievalDate": "2026-10-16T22:50:48.146Z",
-    "experienceLevel": "Entry to Mid Level (1-3 years)",
-    "overview": "Core technical requirements benchmarked against real open-source GitHub code artifacts.",
-    "skills": [
-      {
-        "id": "js-demo-1",
-        "name": "TypeScript & JavaScript",
-        "category": "Languages",
-        "description": "Proficiency in typed web architectures.",
-        "importance": "required",
-        "source": "extracted"
-      },
-      {
-        "id": "js-demo-2",
-        "name": "RESTful API Engineering",
-        "category": "Backend",
-        "description": "Building HTTP endpoints and middleware.",
-        "importance": "required",
-        "source": "extracted"
-      },
-      {
-        "id": "js-demo-3",
-        "name": "Automated Testing",
-        "category": "Quality Assurance",
-        "description": "Unit and integration test suites.",
-        "importance": "required",
-        "source": "extracted"
-      },
-      {
-        "id": "js-demo-4",
-        "name": "PostgreSQL & Relational DBs",
-        "category": "Databases",
-        "description": "Relational schema modeling and transactions.",
-        "importance": "required",
-        "source": "extracted"
-      },
-      {
-        "id": "js-demo-5",
-        "name": "Docker & Containerization",
-        "category": "DevOps",
-        "description": "Dockerfile and container configuration.",
-        "importance": "preferred",
-        "source": "extracted"
-      },
-      {
-        "id": "js-demo-6",
-        "name": "CI/CD Pipelines",
-        "category": "DevOps",
-        "description": "Automated GitHub Actions workflows.",
-        "importance": "preferred",
-        "source": "extracted"
-      }
-    ],
-    "extractionStatus": "ai_extracted"
-  },
-  "evidenceItems": [
-    {
-      "id": "ev-demo-1",
-      "skillName": "TypeScript & JavaScript",
-      "category": "Languages",
-      "requirementType": "required",
-      "resumeClaimStatus": "present",
-      "resumeClaimQuote": "Built services in TypeScript and JavaScript.",
-      "evidenceStatus": "DEMONSTRATED",
-      "citations": [
-        {
-          "repoUrl": "https://github.com/expressjs/express",
-          "repoName": "express",
-          "filePath": "package.json",
-          "commitSha": "a419aa7",
-          "codeExcerpt": "\"devDependencies\": { \"typescript\": \"^5.0.0\" }",
-          "reason": "Active TypeScript types and package dependencies in codebase.",
-          "isVerifiedInCommit": true,
-          "authorshipDisclaimer": "Public open-source repository evidence; authorship is not certified."
-        }
-      ],
-      "explanation": "Relevant implementation evidence was found in the analyzed repository files.",
-      "confidence": "high",
-      "uncertaintyNotes": "Scoped to analyzed files in expressjs/express repository.",
-      "recommendedNextStep": "Expand strict typing in utility modules.",
-      "lastAssessedCommit": "a419aa7",
-      "lastAssessedAt": "2026-10-16T22:50:48.146Z"
-    },
-    {
-      "id": "ev-demo-2",
-      "skillName": "RESTful API Engineering",
-      "category": "Backend",
-      "requirementType": "required",
-      "resumeClaimStatus": "present",
-      "resumeClaimQuote": "Designed REST endpoints and route middleware.",
-      "evidenceStatus": "DEMONSTRATED",
-      "citations": [
-        {
-          "repoUrl": "https://github.com/expressjs/express",
-          "repoName": "express",
-          "filePath": "lib/router/index.js",
-          "commitSha": "a419aa7",
-          "codeExcerpt": "proto.route = function route(path) { ... }",
-          "reason": "Core HTTP routing implementation.",
-          "isVerifiedInCommit": true,
-          "authorshipDisclaimer": "Public open-source repository evidence; authorship is not certified."
-        }
-      ],
-      "explanation": "Verified HTTP controller and routing logic in repository codebase.",
-      "confidence": "high",
-      "uncertaintyNotes": "Sample demonstration evidence.",
-      "recommendedNextStep": "Add OpenAPI/Swagger schema documentation.",
-      "lastAssessedCommit": "a419aa7",
-      "lastAssessedAt": "2026-10-16T22:50:48.146Z"
-    },
-    {
-      "id": "ev-demo-3",
-      "skillName": "Automated Testing",
-      "category": "Quality Assurance",
-      "requirementType": "required",
-      "resumeClaimStatus": "present",
-      "resumeClaimQuote": "Authored automated unit and integration tests.",
-      "evidenceStatus": "PARTIALLY DEMONSTRATED",
-      "citations": [
-        {
-          "repoUrl": "https://github.com/expressjs/express",
-          "repoName": "express",
-          "filePath": "test/Route.js",
-          "commitSha": "a419aa7",
-          "codeExcerpt": "describe(\"Route\", function () { ... })",
-          "reason": "Route unit test suite present in test directory.",
-          "isVerifiedInCommit": true,
-          "authorshipDisclaimer": "Public open-source repository evidence; authorship is not certified."
-        }
-      ],
-      "explanation": "Unit tests are present, but end-to-end coverage and CI integration test results were not verified.",
-      "confidence": "medium",
-      "uncertaintyNotes": "Partial evidence; coverage metrics not fully published.",
-      "recommendedNextStep": "Add integration tests for failure cases and error status handling.",
-      "lastAssessedCommit": "a419aa7",
-      "lastAssessedAt": "2026-10-16T22:50:48.146Z"
-    },
-    {
-      "id": "ev-demo-4",
-      "skillName": "PostgreSQL & Relational DBs",
-      "category": "Databases",
-      "requirementType": "required",
-      "resumeClaimStatus": "present",
-      "resumeClaimQuote": "Worked with PostgreSQL databases.",
-      "evidenceStatus": "NOT ENOUGH EVIDENCE",
-      "citations": [],
-      "explanation": "Your resume mentions this skill, but we couldn't find enough supporting evidence in the examined project files.",
-      "confidence": "low",
-      "uncertaintyNotes": "No database migration or SQL model files found in examined files.",
-      "recommendedNextStep": "Connect a repository containing Prisma schemas or SQL migration files.",
-      "lastAssessedCommit": "a419aa7",
-      "lastAssessedAt": "2026-10-16T22:50:48.146Z"
-    },
-    {
-      "id": "ev-demo-5",
-      "skillName": "Docker & Containerization",
-      "category": "DevOps",
-      "requirementType": "preferred",
-      "resumeClaimStatus": "absent",
-      "resumeClaimQuote": "Not explicitly listed in resume",
-      "evidenceStatus": "NOT ENOUGH EVIDENCE",
-      "citations": [],
-      "explanation": "No Dockerfile or container compose definitions were found in the inspected files.",
-      "confidence": "low",
-      "uncertaintyNotes": "Docker configuration not present in root directory.",
-      "recommendedNextStep": "Add a multi-stage Dockerfile to demonstrate containerization.",
-      "lastAssessedCommit": "a419aa7",
-      "lastAssessedAt": "2026-10-16T22:50:48.146Z"
-    },
-    {
-      "id": "ev-demo-6",
-      "skillName": "CI/CD Pipelines",
-      "category": "DevOps",
-      "requirementType": "preferred",
-      "resumeClaimStatus": "present",
-      "resumeClaimQuote": "Configured automated CI workflows.",
-      "evidenceStatus": "DEMONSTRATED",
-      "citations": [
-        {
-          "repoUrl": "https://github.com/expressjs/express",
-          "repoName": "express",
-          "filePath": ".github/workflows/ci.yml",
-          "commitSha": "a419aa7",
-          "codeExcerpt": "name: ci\non: [push, pull_request]",
-          "reason": "GitHub Actions continuous integration workflow configured.",
-          "isVerifiedInCommit": true,
-          "authorshipDisclaimer": "Public open-source repository evidence; authorship is not certified."
-        }
-      ],
-      "explanation": "Verified automated CI workflow manifest in .github/workflows directory.",
-      "confidence": "high",
-      "uncertaintyNotes": "Workflow file verified.",
-      "recommendedNextStep": "Add automated coverage reporting to the CI pipeline.",
-      "lastAssessedCommit": "a419aa7",
-      "lastAssessedAt": "2026-10-16T22:50:48.146Z"
-    }
-  ],
-  "consistencyFindings": [
-    {
-      "id": "cons-demo-1",
-      "skill": "PostgreSQL & Relational DBs",
-      "findingType": "not_supported",
-      "headline": "Claimed Skill Lacks Repository Implementation",
-      "explanation": "Resume lists PostgreSQL proficiency, but the connected repository contains no relational schemas, SQL scripts, or ORM configurations.",
-      "resumeCitation": "Worked with PostgreSQL databases"
-    },
-    {
-      "id": "cons-demo-2",
-      "skill": "RESTful API Engineering",
-      "findingType": "supported",
-      "headline": "Resume Claim Strongly Supported by Code",
-      "explanation": "Project source files demonstrate extensive HTTP route handling and middleware dispatching.",
-      "resumeCitation": "Designed REST endpoints and route middleware",
-      "codeCitation": "lib/router/index.js at commit a419aa7"
-    }
-  ],
-  "verdict": {
-    "verdict": "PARTIAL EVIDENCE OF MATCH",
-    "matchScore": 59,
-    "matchSummary": "You demonstrate relevant code for several requirements (3/4 required skills met, 59% readiness score), but important skills need additional project evidence.",
-    "requiredSkillsMet": 3,
-    "totalRequiredSkills": 4,
-    "preferredSkillsMet": 1,
-    "totalPreferredSkills": 2,
-    "demonstratedSkills": [
-      "TypeScript & JavaScript",
-      "RESTful API Engineering",
-      "CI/CD Pipelines"
-    ],
-    "gapSkills": [
-      "Automated Testing (Partial)",
-      "PostgreSQL & Relational DBs (Missing proof)",
-      "Docker & Containerization (Missing proof)"
-    ],
-    "claimsNeedingClarification": [
-      "Resume mentions PostgreSQL & Relational DBs, but repository evidence is insufficient or requires review."
-    ],
-    "keyNextSteps": [
-      "Add a project exercise demonstrating Automated Testing (Partial).",
-      "Add a project exercise demonstrating PostgreSQL & Relational DBs (Missing proof).",
-      "Add a project exercise demonstrating Docker & Containerization (Missing proof)."
-    ],
-    "limitations": [
-      "Assessment is strictly based on the public repository files retrieved and does not analyze private or omitted files.",
-      "A status of \"Not enough evidence\" is not proof of incompetence; it indicates where additional code artifacts would help demonstrate capability.",
-      "Code presence in public repositories indicates implementation evidence, not certified individual authorship.",
-      "SkillTrace.ai is an evidence-based self-evaluation tool, not an employment guarantee."
-    ],
-    "scoreFormula": "(2.5 / 4 Required × 70%) + (1.0 / 2 Preferred × 30%) = 59%",
-    "hasSufficientData": true,
-    "assessedAt": "2026-10-16T22:50:48.146Z"
-  },
-  "actionPlan": [
-    {
-      "id": "act-demo-1",
-      "skill": "PostgreSQL & Relational DBs",
-      "priority": "high",
-      "targetJobRelevance": "Required skill for target backend role.",
-      "currentEvidenceStatus": "Missing code proof in connected repositories.",
-      "practicalExercise": "Create a relational schema migration with Prisma or PostgreSQL DDL and commit it.",
-      "expectedEvidenceToProduce": "Committed schema.prisma or migration SQL file.",
-      "checklist": [
-        {
-          "id": "ch-d-1",
-          "task": "Define relational entities with foreign keys",
-          "completed": false
+          "category": "test"
         },
         {
-          "id": "ch-d-2",
-          "task": "Add a database migration script",
-          "completed": false
+          "path": "test/acceptance/cookie-sessions.js",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "test/acceptance/cookies.js",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "test/acceptance/downloads.js",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "test/acceptance/ejs.js",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "test/acceptance/error-pages.js",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "test/acceptance/error.js",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "test/acceptance/hello-world.js",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "test/acceptance/markdown.js",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "test/acceptance/multi-router.js",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "test/acceptance/mvc.js",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "test/acceptance/params.js",
+          "size": 1024,
+          "category": "test"
+        }
+      ]
+    },
+    {
+      "id": "repo-facebook-react",
+      "url": "https://github.com/react/react",
+      "owner": "facebook",
+      "repo": "react",
+      "defaultBranch": "main",
+      "description": "The library for web and native user interfaces.",
+      "language": "JavaScript",
+      "stars": 251170,
+      "forks": 51510,
+      "selectedForAssessment": true,
+      "lastAnalyzedCommit": {
+        "sha": "098d2e8",
+        "message": "[release] Await gh availability check before verifying artifacts (#37855)",
+        "date": "2026-10-15T08:14:35Z",
+        "author": "irontaek"
+      },
+      "latestCommit": {
+        "sha": "098d2e8",
+        "message": "[release] Await gh availability check before verifying artifacts (#37855)",
+        "date": "2026-10-15T08:14:35Z",
+        "author": "irontaek"
+      },
+      "hasUpdate": false,
+      "analyzedFilesCount": 7157,
+      "fileList": [
+        ".claude/instructions.md",
+        ".claude/settings.json",
+        ".claude/skills/extract-errors/SKILL.md",
+        ".claude/skills/feature-flags/SKILL.md",
+        ".claude/skills/fix/SKILL.md",
+        ".claude/skills/flags/SKILL.md",
+        ".claude/skills/flow/SKILL.md",
+        ".claude/skills/test/SKILL.md",
+        ".claude/skills/verify/SKILL.md",
+        ".codesandbox/ci.json",
+        ".editorconfig",
+        ".eslintignore",
+        ".eslintrc.js",
+        ".git-blame-ignore-revs",
+        ".gitattributes",
+        ".github/ISSUE_TEMPLATE/bug_report.md",
+        ".github/ISSUE_TEMPLATE/compiler_bug_report.yml",
+        ".github/ISSUE_TEMPLATE/config.yml",
+        ".github/ISSUE_TEMPLATE/devtools_bug_report.yml",
+        ".github/PULL_REQUEST_TEMPLATE.md",
+        ".github/dependabot.yml",
+        ".github/workflows/compiler_discord_notify.yml",
+        ".github/workflows/compiler_playground.yml",
+        ".github/workflows/compiler_prereleases.yml",
+        ".github/workflows/compiler_prereleases_manual.yml",
+        ".github/workflows/compiler_prereleases_nightly.yml",
+        ".github/workflows/compiler_rust.yml",
+        ".github/workflows/compiler_rust_publish.yml",
+        ".github/workflows/compiler_rust_version.yml",
+        ".github/workflows/compiler_typescript.yml",
+        ".github/workflows/devtools_cdt_mcp_publish.yml",
+        ".github/workflows/devtools_discord_notify.yml",
+        ".github/workflows/devtools_regression_tests.yml",
+        ".github/workflows/runtime_build_and_test.yml",
+        ".github/workflows/runtime_commit_artifacts.yml",
+        ".github/workflows/runtime_discord_notify.yml",
+        ".github/workflows/runtime_eslint_plugin_e2e.yml",
+        ".github/workflows/runtime_fuzz_tests.yml",
+        ".github/workflows/runtime_release_from_ci.yml",
+        ".github/workflows/runtime_sizebot_comment.yml",
+        ".github/workflows/shared_check_maintainer.yml",
+        ".github/workflows/shared_cleanup_merged_branch_caches.yml",
+        ".github/workflows/shared_cleanup_stale_branch_caches.yml",
+        ".github/workflows/shared_close_direct_sync_branch_prs.yml",
+        ".github/workflows/shared_label_core_team_prs.yml",
+        ".github/workflows/shared_lint.yml",
+        ".github/workflows/shared_stale.yml",
+        ".gitignore",
+        ".mailmap",
+        ".nvmrc",
+        ".prettierignore",
+        ".prettierrc.js",
+        ".watchmanconfig",
+        "CHANGELOG.md",
+        "CLAUDE.md",
+        "CODE_OF_CONDUCT.md",
+        "CONTRIBUTING.md",
+        "LICENSE",
+        "MAINTAINERS",
+        "README.md",
+        "ReactVersions.js",
+        "SECURITY.md",
+        "babel.config-react-compiler.js",
+        "babel.config-ts.js",
+        "babel.config.js",
+        "compiler/.claude/agents/analyze-pass-impact.md",
+        "compiler/.claude/agents/compiler-review.md",
+        "compiler/.claude/agents/investigate-error.md",
+        "compiler/.claude/agents/port-pass.md",
+        "compiler/.claude/rules/commit-convention.md",
+        "compiler/.claude/rules/multi-step-instructions.md",
+        "compiler/.claude/rules/pass-docs.md",
+        "compiler/.claude/rules/plan-docs.md",
+        "compiler/.claude/rules/rust-port.md",
+        "compiler/.claude/settings.json",
+        "compiler/.claude/skills/compiler-commit/SKILL.md",
+        "compiler/.claude/skills/compiler-orchestrator/SKILL.md",
+        "compiler/.claude/skills/compiler-port/SKILL.md",
+        "compiler/.claude/skills/compiler-review/SKILL.md",
+        "compiler/.claude/skills/compiler-verify/SKILL.md",
+        "compiler/.claude/skills/plan-update/SKILL.md",
+        "compiler/.claude/skills/rust-port-status/SKILL.md",
+        "compiler/.eslintrc.js",
+        "compiler/.gitignore",
+        "compiler/CHANGELOG.md",
+        "compiler/CLAUDE.md",
+        "compiler/Cargo.toml",
+        "compiler/README.md",
+        "compiler/apps/playground/.eslintrc.json",
+        "compiler/apps/playground/.gitignore",
+        "compiler/apps/playground/.vscode/extensions.json",
+        "compiler/apps/playground/README.md",
+        "compiler/apps/playground/__tests__/e2e/__snapshots__/page.spec.ts/01-user-output.txt",
+        "compiler/apps/playground/__tests__/e2e/__snapshots__/page.spec.ts/02-default-output.txt",
+        "compiler/apps/playground/__tests__/e2e/__snapshots__/page.spec.ts/compilationMode-all-output.txt",
+        "compiler/apps/playground/__tests__/e2e/__snapshots__/page.spec.ts/compilationMode-infer-output.txt",
+        "compiler/apps/playground/__tests__/e2e/__snapshots__/page.spec.ts/default-config.txt",
+        "compiler/apps/playground/__tests__/e2e/__snapshots__/page.spec.ts/function-scope-beats-module-scope-output.txt",
+        "compiler/apps/playground/__tests__/e2e/__snapshots__/page.spec.ts/module-scope-use-memo-output.txt",
+        "compiler/apps/playground/__tests__/e2e/__snapshots__/page.spec.ts/module-scope-use-no-memo-output.txt",
+        "compiler/apps/playground/__tests__/e2e/__snapshots__/page.spec.ts/parse-flow-output.txt",
+        "compiler/apps/playground/__tests__/e2e/__snapshots__/page.spec.ts/parse-typescript-output.txt",
+        "compiler/apps/playground/__tests__/e2e/__snapshots__/page.spec.ts/todo-function-scope-does-not-beat-module-scope-output.txt",
+        "compiler/apps/playground/__tests__/e2e/__snapshots__/page.spec.ts/use-memo-output.txt",
+        "compiler/apps/playground/__tests__/e2e/__snapshots__/page.spec.ts/use-no-memo-output.txt",
+        "compiler/apps/playground/__tests__/e2e/page.spec.ts",
+        "compiler/apps/playground/__tests__/parseConfigOverrides.test.mjs",
+        "compiler/apps/playground/app/layout.tsx",
+        "compiler/apps/playground/app/page.tsx",
+        "compiler/apps/playground/colors.js",
+        "compiler/apps/playground/components/AccordionWindow.tsx",
+        "compiler/apps/playground/components/Editor/ConfigEditor.tsx",
+        "compiler/apps/playground/components/Editor/EditorImpl.tsx",
+        "compiler/apps/playground/components/Editor/Input.tsx",
+        "compiler/apps/playground/components/Editor/Output.tsx",
+        "compiler/apps/playground/components/Editor/index.tsx",
+        "compiler/apps/playground/components/Editor/monacoOptions.ts",
+        "compiler/apps/playground/components/Header.tsx",
+        "compiler/apps/playground/components/Icons/IconChevron.tsx",
+        "compiler/apps/playground/components/Icons/IconGitHub.tsx",
+        "compiler/apps/playground/components/Logo.tsx",
+        "compiler/apps/playground/components/Message.tsx",
+        "compiler/apps/playground/components/StoreContext.tsx",
+        "compiler/apps/playground/components/TabbedWindow.tsx",
+        "compiler/apps/playground/components/index.ts",
+        "compiler/apps/playground/hooks/index.ts",
+        "compiler/apps/playground/hooks/useMountEffect.ts",
+        "compiler/apps/playground/lib/compilation.ts",
+        "compiler/apps/playground/lib/createContext.ts",
+        "compiler/apps/playground/lib/defaultStore.ts",
+        "compiler/apps/playground/lib/reactCompilerMonacoDiagnostics.ts",
+        "compiler/apps/playground/lib/stores/index.ts",
+        "compiler/apps/playground/lib/stores/messages.ts",
+        "compiler/apps/playground/lib/stores/store.ts",
+        "compiler/apps/playground/lib/transitionTypes.ts",
+        "compiler/apps/playground/lib/types.d.ts",
+        "compiler/apps/playground/next.config.js",
+        "compiler/apps/playground/package.json",
+        "compiler/apps/playground/playwright.config.js",
+        "compiler/apps/playground/postcss.config.js",
+        "compiler/apps/playground/public/graphvizlib.wasm",
+        "compiler/apps/playground/public/site.webmanifest",
+        "compiler/apps/playground/scripts/downloadFonts.js",
+        "compiler/apps/playground/scripts/link-compiler.sh",
+        "compiler/apps/playground/styles/globals.css",
+        "compiler/apps/playground/tailwind.config.js",
+        "compiler/apps/playground/tsconfig.json",
+        "compiler/apps/playground/vercel.json",
+        "compiler/crates/TODO.md",
+        "compiler/crates/react_compiler/Cargo.toml",
+        "compiler/crates/react_compiler/src/debug_print.rs",
+        "compiler/crates/react_compiler/src/entrypoint/compile_result.rs",
+        "compiler/crates/react_compiler/src/entrypoint/gating.rs",
+        "compiler/crates/react_compiler/src/entrypoint/imports.rs",
+        "compiler/crates/react_compiler/src/entrypoint/mod.rs",
+        "compiler/crates/react_compiler/src/entrypoint/pipeline.rs",
+        "compiler/crates/react_compiler/src/entrypoint/plugin_options.rs",
+        "compiler/crates/react_compiler/src/entrypoint/program.rs",
+        "compiler/crates/react_compiler/src/entrypoint/suppression.rs",
+        "compiler/crates/react_compiler/src/entrypoint/validate_source_locations.rs",
+        "compiler/crates/react_compiler/src/fixture_utils.rs",
+        "compiler/crates/react_compiler/src/lib.rs",
+        "compiler/crates/react_compiler/src/timing.rs",
+        "compiler/crates/react_compiler_ast/Cargo.toml",
+        "compiler/crates/react_compiler_ast/src/common.rs",
+        "compiler/crates/react_compiler_ast/src/declarations.rs",
+        "compiler/crates/react_compiler_ast/src/expressions.rs",
+        "compiler/crates/react_compiler_ast/src/jsx.rs",
+        "compiler/crates/react_compiler_ast/src/lib.rs",
+        "compiler/crates/react_compiler_ast/src/literals.rs",
+        "compiler/crates/react_compiler_ast/src/operators.rs",
+        "compiler/crates/react_compiler_ast/src/patterns.rs",
+        "compiler/crates/react_compiler_ast/src/scope.rs",
+        "compiler/crates/react_compiler_ast/src/statements.rs",
+        "compiler/crates/react_compiler_ast/src/visitor.rs",
+        "compiler/crates/react_compiler_ast/tests/deep_nesting.rs",
+        "compiler/crates/react_compiler_ast/tests/round_trip.rs",
+        "compiler/crates/react_compiler_ast/tests/scope_resolution.rs",
+        "compiler/crates/react_compiler_diagnostics/Cargo.toml",
+        "compiler/crates/react_compiler_diagnostics/src/code_frame.rs",
+        "compiler/crates/react_compiler_diagnostics/src/js_string.rs",
+        "compiler/crates/react_compiler_diagnostics/src/lib.rs",
+        "compiler/crates/react_compiler_hir/Cargo.toml",
+        "compiler/crates/react_compiler_hir/src/default_module_type_provider.rs",
+        "compiler/crates/react_compiler_hir/src/dominator.rs",
+        "compiler/crates/react_compiler_hir/src/environment.rs",
+        "compiler/crates/react_compiler_hir/src/environment_config.rs",
+        "compiler/crates/react_compiler_hir/src/globals.rs",
+        "compiler/crates/react_compiler_hir/src/lib.rs",
+        "compiler/crates/react_compiler_hir/src/object_shape.rs",
+        "compiler/crates/react_compiler_hir/src/print.rs",
+        "compiler/crates/react_compiler_hir/src/reactive.rs",
+        "compiler/crates/react_compiler_hir/src/type_config.rs",
+        "compiler/crates/react_compiler_hir/src/visitors.rs",
+        "compiler/crates/react_compiler_inference/Cargo.toml",
+        "compiler/crates/react_compiler_inference/src/align_method_call_scopes.rs",
+        "compiler/crates/react_compiler_inference/src/align_object_method_scopes.rs",
+        "compiler/crates/react_compiler_inference/src/align_reactive_scopes_to_block_scopes_hir.rs",
+        "compiler/crates/react_compiler_inference/src/analyse_functions.rs",
+        "compiler/crates/react_compiler_inference/src/build_reactive_scope_terminals_hir.rs"
+      ],
+      "sampleFiles": [
+        {
+          "path": ".claude/skills/test/SKILL.md",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "compiler/apps/playground/__tests__/e2e/page.spec.ts",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "compiler/crates/react_compiler_ast/tests/deep_nesting.rs",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "compiler/crates/react_compiler_ast/tests/round_trip.rs",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "compiler/crates/react_compiler_ast/tests/scope_resolution.rs",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "compiler/crates/react_compiler_lowering/tests/unknown_statement_lowering.rs",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "fixtures/attribute-behavior/src/App.test.js",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "fixtures/flight/__tests__/__e2e__/smoke.test.js",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "fixtures/legacy-jsx-runtimes/react-14/react-14.test.js",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "fixtures/legacy-jsx-runtimes/react-15/react-15.test.js",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "fixtures/legacy-jsx-runtimes/react-16/react-16.test.js",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "fixtures/legacy-jsx-runtimes/react-17/react-17.test.js",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "packages/react-devtools-inline/__tests__/__e2e__/components.test.js",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "packages/react-devtools-inline/__tests__/__e2e__/profiler.test.js",
+          "size": 1024,
+          "category": "test"
+        },
+        {
+          "path": "packages/react-devtools-shell/src/app/TraceUpdatesTest/index.js",
+          "size": 1024,
+          "category": "test"
         }
       ]
     }
   ],
+  "job": null,
+  "evidenceItems": [],
+  "consistencyFindings": [],
+  "verdict": null,
+  "actionPlan": [],
   "history": [],
   "settings": {
     "autoCheckFrequencyMinutes": 15,
     "autoReassessOnCommit": true,
     "includePreferredSkillsInVerdict": true,
     "minEvidenceConfidence": "medium"
-  },
-  "isDemoData": true,
-  "demoLabel": "Sample Demonstration Mode (Demo Profile)"
+  }
 }

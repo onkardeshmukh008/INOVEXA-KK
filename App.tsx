@@ -245,6 +245,7 @@ export default function App() {
               isAssessing={isAssessing}
               onCheckUpdates={handleCheckUpdates}
               checkingUpdates={checkingUpdates}
+              authUser={authUser}
             />
           )}
 

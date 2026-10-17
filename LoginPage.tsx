@@ -324,18 +324,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onViewSpla
           <div className="text-center space-y-2">
             <SkillTraceLogo size={52} variant="badge-only" className="mx-auto" />
             <div>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1.5">
-                <User className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-                <span>Local Workspace Personalization</span>
-              </div>
               <h1
                 style={{ fontFamily: 'Georgia, Cambria, "Times New Roman", serif', color: '#865A30' }}
                 className="text-2xl font-bold tracking-tight dark:text-amber-400"
               >
-                Profile & Workspace Setup
+                Sign in to SkillTrace
               </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                Personalize your coaching experience. Profiles are stored locally in your browser (localStorage) to customize your workspace view.
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Verify what your code proves and discover what to improve next.
               </p>
             </div>
           </div>

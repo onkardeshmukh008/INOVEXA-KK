@@ -1,6 +1,12 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express, { Request, Response } from 'express';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import * as pdfParseModule from 'pdf-parse';
 const pdfParse: any = (pdfParseModule as any).default || pdfParseModule;
+import { createServer as createViteServer } from 'vite';
 
 import {
   extractJobRequirementsWithAI,
@@ -32,20 +38,24 @@ import type {
   ResumeClaim,
 } from './src/types/index.ts';
 
-export function createApiApp(bodyLimit = '35mb') {
-  const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-  app.use(express.json({ limit: bodyLimit }));
-  app.use(express.urlencoded({ extended: true, limit: bodyLimit }));
+async function startServer() {
+  const app = express();
+  const PORT = Number(process.env.PORT) || 3000;
+
+  app.use(express.json({ limit: '35mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '35mb' }));
 
   // 1. GET FULL APP STATE
-    app.get('/api/state', async (_req: Request, res: Response) => {
+  app.get('/api/state', (_req: Request, res: Response) => {
     try {
-      const state = await getAppState();
+      const state = getAppState();
       // Ensure resumeAssessment is always present if a resume exists
       if (state.resume && !state.resumeAssessment) {
         state.resumeAssessment = generateResumeAssessment(state.resume);
-        await saveAppState(state);
+        saveAppState(state);
       }
       res.json(state);
     } catch (err: any) {
@@ -111,7 +121,7 @@ export function createApiApp(bodyLimit = '35mb') {
         extractedClaimsData = parsed.claims;
       }
 
-      const state = await getAppState();
+      const state = getAppState();
       state.resume = {
         fileName: fileName || 'Uploaded_Resume_Document',
         fileSize: fileSize || Buffer.byteLength(textContent, 'utf-8'),
@@ -121,13 +131,10 @@ export function createApiApp(bodyLimit = '35mb') {
         claims: extractedClaimsData,
       };
 
-      // Clear demo flag on genuine user upload
-      state.isDemoData = false;
-      state.demoLabel = undefined;
       // Generate Resume Assessment & Skill Verification Report in same section
       state.resumeAssessment = generateResumeAssessment(state.resume);
 
-      await saveAppState(state);
+      saveAppState(state);
       res.json({
         success: true,
         resume: state.resume,
@@ -140,10 +147,10 @@ export function createApiApp(bodyLimit = '35mb') {
   });
 
   // 3. EDIT RESUME CLAIMS / SKILLS
-  app.post('/api/resume/edit-claims', async (req: Request, res: Response) => {
+  app.post('/api/resume/edit-claims', (req: Request, res: Response) => {
     try {
       const { claims, profile } = req.body;
-      const state = await getAppState();
+      const state = getAppState();
       if (!state.resume) {
         return res.status(400).json({ error: 'No resume found to edit' });
       }
@@ -155,7 +162,7 @@ export function createApiApp(bodyLimit = '35mb') {
       }
       // Re-generate resume assessment
       state.resumeAssessment = generateResumeAssessment(state.resume);
-      await saveAppState(state);
+      saveAppState(state);
       res.json({ success: true, resume: state.resume, assessment: state.resumeAssessment });
     } catch (err: any) {
       res.status(500).json({ error: err.message || 'Failed to edit claims' });
@@ -163,12 +170,12 @@ export function createApiApp(bodyLimit = '35mb') {
   });
 
   // 4. REMOVE RESUME
-  app.delete('/api/resume', async (_req: Request, res: Response) => {
+  app.delete('/api/resume', (_req: Request, res: Response) => {
     try {
-      const state = await getAppState();
+      const state = getAppState();
       state.resume = null;
       state.resumeAssessment = null;
-      await saveAppState(state);
+      saveAppState(state);
       res.json({ success: true });
     } catch (err: any) {
       res.status(500).json({ error: err.message || 'Failed to remove resume' });
@@ -211,7 +218,7 @@ export function createApiApp(bodyLimit = '35mb') {
       }
 
       const repoDetails = await fetchGitHubRepoDetails(owner, repo);
-      const state = await getAppState();
+      const state = getAppState();
 
       // Check if already added
       const existingIdx = state.repositories.findIndex((r) => r.id === repoDetails.id);
@@ -221,9 +228,7 @@ export function createApiApp(bodyLimit = '35mb') {
         state.repositories.push(repoDetails);
       }
 
-      state.isDemoData = false;
-      state.demoLabel = undefined;
-      await saveAppState(state);
+      saveAppState(state);
       res.json({ success: true, repository: repoDetails, repositories: state.repositories });
     } catch (err: any) {
       console.error('Error adding GitHub repo:', err);
@@ -300,7 +305,7 @@ export function createApiApp(bodyLimit = '35mb') {
       const assessment = await assessStandaloneRepoWithAI(repoData);
 
       // 4. Update state (independent of resume!)
-      const state = await getAppState();
+      const state = getAppState();
       state.standaloneRepoAssessment = assessment;
 
       const existingIdx = state.repositories.findIndex((r) => r.id === repoDetails.id);
@@ -310,7 +315,7 @@ export function createApiApp(bodyLimit = '35mb') {
         state.repositories.push(repoDetails);
       }
 
-      await saveAppState(state);
+      saveAppState(state);
 
       res.json({
         success: true,
@@ -325,12 +330,12 @@ export function createApiApp(bodyLimit = '35mb') {
   });
 
   // 6. DELETE GITHUB REPO
-  app.delete('/api/github/repo/:id', async (req: Request, res: Response) => {
+  app.delete('/api/github/repo/:id', (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const state = await getAppState();
+      const state = getAppState();
       state.repositories = state.repositories.filter((r) => r.id !== id);
-      await saveAppState(state);
+      saveAppState(state);
       res.json({ success: true, repositories: state.repositories });
     } catch (err: any) {
       res.status(500).json({ error: err.message || 'Failed to remove repository' });
@@ -338,15 +343,15 @@ export function createApiApp(bodyLimit = '35mb') {
   });
 
   // 7. TOGGLE REPO INCLUSION FOR ASSESSMENT
-  app.patch('/api/github/repo/:id/toggle', async (req: Request, res: Response) => {
+  app.patch('/api/github/repo/:id/toggle', (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const state = await getAppState();
+      const state = getAppState();
       const repo = state.repositories.find((r) => r.id === id);
       if (!repo) return res.status(404).json({ error: 'Repository not found' });
 
       repo.selectedForAssessment = !repo.selectedForAssessment;
-      await saveAppState(state);
+      saveAppState(state);
       res.json({ success: true, repository: repo, repositories: state.repositories });
     } catch (err: any) {
       res.status(500).json({ error: err.message || 'Failed to toggle repository' });
@@ -400,21 +405,11 @@ export function createApiApp(bodyLimit = '35mb') {
       }
 
       const job = await extractJobRequirementsWithAI(title || '', rawDescription, url);
-      const state = await getAppState();
+      const state = getAppState();
       state.job = job;
-      state.isDemoData = false;
-      state.demoLabel = undefined;
-      await saveAppState(state);
+      saveAppState(state);
 
-      res.json({
-        success: true,
-        job,
-        extractionStatus: job.extractionStatus,
-        warning:
-          job.extractionStatus === 'extraction_failed'
-            ? job.extractionError || 'AI extraction failed. Please manually enter or confirm skills.'
-            : undefined,
-      });
+      res.json({ success: true, job });
     } catch (err: any) {
       console.error('Job parse error:', err);
       res.status(500).json({ error: err.message || 'Failed to extract job requirements' });
@@ -422,10 +417,10 @@ export function createApiApp(bodyLimit = '35mb') {
   });
 
   // 9. UPDATE JOB SKILLS (USER EDIT/CORRECT)
-  app.post('/api/job/update-skills', async (req: Request, res: Response) => {
+  app.post('/api/job/update-skills', (req: Request, res: Response) => {
     try {
       const { skills, title, company } = req.body;
-      const state = await getAppState();
+      const state = getAppState();
       if (!state.job) {
         return res.status(400).json({ error: 'No job selected to update' });
       }
@@ -436,7 +431,7 @@ export function createApiApp(bodyLimit = '35mb') {
       if (title) state.job.title = title;
       if (company) state.job.company = company;
 
-      await saveAppState(state);
+      saveAppState(state);
       res.json({ success: true, job: state.job });
     } catch (err: any) {
       res.status(500).json({ error: err.message || 'Failed to update job requirements' });
@@ -446,7 +441,7 @@ export function createApiApp(bodyLimit = '35mb') {
   // 10. RUN COMPREHENSIVE ASSESSMENT (CORE INTELLIGENCE)
   app.post('/api/assess', async (_req: Request, res: Response) => {
     try {
-      const state = await getAppState();
+      const state = getAppState();
       if (!state.resume) {
         return res.status(400).json({ error: 'Please upload a resume first to run the assessment.' });
       }
@@ -484,10 +479,8 @@ export function createApiApp(bodyLimit = '35mb') {
       state.consistencyFindings = consistencyFindings;
       state.verdict = verdict;
       state.actionPlan = actionPlan;
-      state.isDemoData = false;
-      state.demoLabel = undefined;
 
-      await saveAppState(state);
+      saveAppState(state);
       res.json({
         success: true,
         evidenceItems,
@@ -504,137 +497,83 @@ export function createApiApp(bodyLimit = '35mb') {
   // 11. CHECK FOR GITHUB UPDATES & AUTOMATIC REASSESSMENT
   app.post('/api/github/check-updates', async (_req: Request, res: Response) => {
     try {
-      const state = await getAppState();
+      const state = getAppState();
       if (state.repositories.length === 0) {
         return res.json({ updated: false, message: 'No repositories connected to check.' });
       }
 
       let anyUpdatesFound = false;
-      let reassessmentSucceededCount = 0;
-      let reassessmentFailedCount = 0;
       const historyEntries: ChangeHistoryEntry[] = [];
 
       for (const repo of state.repositories) {
-        // Last successfully assessed commit SHA
-        const lastAssessedSha = repo.lastAnalyzedCommit?.sha || 'unknown';
-        const comparison = await compareRepoCommits(repo.owner, repo.repo, lastAssessedSha);
+        const lastSha = repo.lastAnalyzedCommit.sha;
+        const comparison = await compareRepoCommits(repo.owner, repo.repo, lastSha);
 
-        if (!comparison || !comparison.hasNewerCommit) {
-          // No newer commits detected
-          if (repo.reassessmentStatus !== 'failed') {
-            repo.hasUpdate = false;
-            repo.reassessmentStatus = 'idle';
-          }
-          continue;
-        }
+        if (comparison && comparison.hasNewerCommit) {
+          anyUpdatesFound = true;
 
-        anyUpdatesFound = true;
-        // Record latest detected commit SHA separately from last assessed commit
-        repo.latestCommit = {
-          sha: comparison.headCommitSha,
-          message: comparison.headCommitMessage,
-          date: comparison.headCommitDate,
-          author: comparison.headCommitAuthor,
-        };
-        repo.hasUpdate = true;
+          // Reassess skills affected by this commit
+          const reassessment = state.job && state.evidenceItems.length > 0
+            ? await reassessCommitDiffWithAI(
+                state.job,
+                state.evidenceItems,
+                comparison,
+                repo.repo
+              )
+            : {
+                reassessedSkills: [],
+                unchangedSkills: [],
+                overallSummary: `New commit ${comparison.headCommitSha} detected. Run an assessment to verify skills.`,
+                updatedEvidence: state.evidenceItems,
+              };
 
-        // Prevent duplicate history entries when endpoint runs repeatedly
-        const alreadyInHistory = state.history.some(
-          (h) => h.repoName === repo.repo && h.newCommitSha === comparison.headCommitSha
-        );
+          // Update repo commit info
+          repo.lastAnalyzedCommit = {
+            sha: comparison.headCommitSha,
+            message: comparison.headCommitMessage,
+            date: comparison.headCommitDate,
+            author: comparison.headCommitAuthor,
+          };
+          repo.latestCommit = repo.lastAnalyzedCommit;
+          repo.hasUpdate = false;
 
-        if (state.job && state.evidenceItems.length > 0) {
-          try {
-            repo.reassessmentStatus = 'pending';
-            const reassessment = await reassessCommitDiffWithAI(
-              state.job,
-              state.evidenceItems,
-              comparison,
-              repo.repo
-            );
-
-            // Reassessment succeeded: advance lastAnalyzedCommit only now!
-            repo.lastAnalyzedCommit = repo.latestCommit;
-            repo.hasUpdate = false;
-            repo.reassessmentStatus = 'success';
-            repo.lastReassessmentError = undefined;
-
-            if (reassessment.reassessedSkills.length > 0) {
-              state.evidenceItems = reassessment.updatedEvidence;
+          // Update evidence and recompute verdict
+          if (reassessment.reassessedSkills.length > 0) {
+            state.evidenceItems = reassessment.updatedEvidence;
+            if (state.job) {
               state.verdict = computeJobReadinessVerdict(state.evidenceItems, state.job);
             }
+          }
 
-            if (!alreadyInHistory) {
-              const historyEntry: ChangeHistoryEntry = {
-                id: `hist-${Date.now()}-${repo.id}-${comparison.headCommitSha}`,
-                timestamp: new Date().toISOString(),
-                repoName: repo.repo,
-                previousCommitSha: comparison.baseCommitSha,
-                newCommitSha: comparison.headCommitSha,
-                commitMessage: comparison.headCommitMessage,
-                changedFiles: comparison.changedFiles,
-                reassessedSkills: reassessment.reassessedSkills,
-                unchangedSkills: reassessment.unchangedSkills,
-                overallChangeSummary: reassessment.overallSummary,
-              };
-              historyEntries.push(historyEntry);
-              state.history.unshift(historyEntry);
-            }
-            reassessmentSucceededCount++;
-          } catch (reassessErr: any) {
-            console.error(
-              `Reassessment failed for ${repo.owner}/${repo.repo} commit ${comparison.headCommitSha}:`,
-              reassessErr.message
-            );
-            // Reassessment failed: RETAIN pending update so user can retry!
-            // Do NOT mark commit as successfully assessed.
-            repo.hasUpdate = true;
-            repo.reassessmentStatus = 'failed';
-            repo.lastReassessmentError =
-              reassessErr.message || 'Automated reassessment failed. Please retry.';
-            reassessmentFailedCount++;
-          }
-        } else {
-          // No job / evidence items configured yet; mark as detected needing assessment
-          repo.reassessmentStatus = 'manual_review_needed';
-          if (!alreadyInHistory) {
-            const historyEntry: ChangeHistoryEntry = {
-              id: `hist-${Date.now()}-${repo.id}-${comparison.headCommitSha}`,
-              timestamp: new Date().toISOString(),
-              repoName: repo.repo,
-              previousCommitSha: comparison.baseCommitSha,
-              newCommitSha: comparison.headCommitSha,
-              commitMessage: comparison.headCommitMessage,
-              changedFiles: comparison.changedFiles,
-              reassessedSkills: [],
-              unchangedSkills: [],
-              overallChangeSummary: `New commit ${comparison.headCommitSha} detected. Select a target job to assess skill evidence.`,
-            };
-            historyEntries.push(historyEntry);
-            state.history.unshift(historyEntry);
-          }
+          // Add history entry
+          const historyEntry: ChangeHistoryEntry = {
+            id: `hist-${Date.now()}-${repo.id}`,
+            timestamp: new Date().toISOString(),
+            repoName: repo.repo,
+            previousCommitSha: comparison.baseCommitSha,
+            newCommitSha: comparison.headCommitSha,
+            commitMessage: comparison.headCommitMessage,
+            changedFiles: comparison.changedFiles,
+            reassessedSkills: reassessment.reassessedSkills,
+            unchangedSkills: reassessment.unchangedSkills,
+            overallChangeSummary: reassessment.overallSummary,
+          };
+
+          historyEntries.push(historyEntry);
+          state.history.unshift(historyEntry);
         }
       }
 
-      await saveAppState(state);
-
-      let message = 'All connected repositories are up to date with the latest analyzed commits.';
-      if (reassessmentFailedCount > 0) {
-        message = `New commits detected, but reassessment could not complete for ${reassessmentFailedCount} repository. The update remains pending for retry.`;
-      } else if (reassessmentSucceededCount > 0) {
-        message = `Detected new commits across your projects! Reassessment completed successfully.`;
-      } else if (anyUpdatesFound) {
-        message = `New commits detected on GitHub. Run a skill assessment to evaluate them against your target job.`;
-      }
+      saveAppState(state);
 
       res.json({
         success: true,
         updated: anyUpdatesFound,
-        reassessmentSuccess: reassessmentSucceededCount > 0,
-        failedCount: reassessmentFailedCount,
         historyEntries,
         state,
-        message,
+        message: anyUpdatesFound
+          ? `Detected new commits across your projects! Reassessment completed.`
+          : `All connected repositories are up to date with the latest analyzed commits.`,
       });
     } catch (err: any) {
       console.error('Check updates error:', err);
@@ -643,10 +582,10 @@ export function createApiApp(bodyLimit = '35mb') {
   });
 
   // 12. TOGGLE ACTION PLAN CHECKLIST ITEM
-  app.post('/api/action-plan/toggle-task', async (req: Request, res: Response) => {
+  app.post('/api/action-plan/toggle-task', (req: Request, res: Response) => {
     try {
       const { planId, taskId } = req.body;
-      const state = await getAppState();
+      const state = getAppState();
       const plan = state.actionPlan.find((p) => p.id === planId);
       if (!plan) return res.status(404).json({ error: 'Plan item not found' });
 
@@ -654,7 +593,7 @@ export function createApiApp(bodyLimit = '35mb') {
       if (!item) return res.status(404).json({ error: 'Checklist task not found' });
 
       item.completed = !item.completed;
-      await saveAppState(state);
+      saveAppState(state);
       res.json({ success: true, actionPlan: state.actionPlan });
     } catch (err: any) {
       res.status(500).json({ error: err.message || 'Failed to toggle task' });
@@ -662,23 +601,44 @@ export function createApiApp(bodyLimit = '35mb') {
   });
 
   // 13. RESET / SEED SAMPLE DATA
-  app.post('/api/seed-sample', async (_req: Request, res: Response) => {
+  app.post('/api/seed-sample', (_req: Request, res: Response) => {
     try {
-      const state = await resetToSampleState();
+      const state = resetToSampleState();
       res.json({ success: true, state });
     } catch (err: any) {
       res.status(500).json({ error: err.message || 'Failed to seed sample state' });
     }
   });
 
-  app.post('/api/clear-state', async (_req: Request, res: Response) => {
+  app.post('/api/clear-state', (_req: Request, res: Response) => {
     try {
-      const state = await clearAppState();
+      const state = clearAppState();
       res.json({ success: true, state });
     } catch (err: any) {
       res.status(500).json({ error: err.message || 'Failed to clear state' });
     }
   });
 
-  return app;
+  // VITE DEV SERVER OR STATIC PROD
+  if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.resolve(__dirname, 'dist')));
+    app.get('*', (_req: Request, res: Response) => {
+      res.sendFile(path.resolve(__dirname, 'dist/index.html'));
+    });
+  } else {
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+    });
+    app.use(vite.middlewares);
+  }
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`SkillTrace.ai server running on http://0.0.0.0:${PORT}`);
+  });
 }
+
+startServer().catch((err) => {
+  console.error('Fatal server start error:', err);
+  process.exit(1);
+});

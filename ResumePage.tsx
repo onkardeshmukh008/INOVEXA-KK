@@ -28,7 +28,6 @@ import {
 } from 'lucide-react';
 import type { ResumeAssessment, ResumeClaim, ResumeData } from '../types/index.ts';
 import { uploadResumeFile, editResumeClaims, removeResume } from '../api.ts';
-import { ResumeProfessionalGuide } from '../components/ResumeProfessionalGuide.tsx';
 
 interface ResumePageProps {
   resume: ResumeData | null;
@@ -276,9 +275,6 @@ export const ResumePage: React.FC<ResumePageProps> = ({
       )}
 
 
-      {/* PROFESSIONAL RESUME OPTIMIZATION GUIDE */}
-      <ResumeProfessionalGuide />
-
       {/* PROMINENT UPLOAD CARD - ACCEPTS ALL FILE TYPES */}
       <div
         onDragOver={(e) => {
@@ -287,10 +283,10 @@ export const ResumePage: React.FC<ResumePageProps> = ({
         }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
-        className={`bg-white dark:bg-slate-900 rounded-xl border-2 border-dashed p-8 text-center transition-all shadow-2xs ${
+        className={`bg-white rounded-xl border-2 border-dashed p-8 text-center transition-all shadow-2xs ${
           isDragging
-            ? 'border-sky-500 bg-sky-50/30 dark:bg-sky-950/30'
-            : 'border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600'
+            ? 'border-sky-500 bg-sky-50/30'
+            : 'border-slate-300 hover:border-slate-400'
         }`}
       >
         <input
@@ -302,15 +298,15 @@ export const ResumePage: React.FC<ResumePageProps> = ({
         />
 
         <div className="max-w-md mx-auto space-y-4">
-          <div className="w-14 h-14 rounded-full bg-sky-50 dark:bg-sky-950/80 text-sky-600 dark:text-sky-400 mx-auto flex items-center justify-center">
+          <div className="w-14 h-14 rounded-full bg-sky-50 text-sky-600 mx-auto flex items-center justify-center">
             <Upload className="w-7 h-7" />
           </div>
 
           <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">
+            <h3 className="text-base font-bold text-slate-900">
               {resume ? 'Replace your current resume' : 'Choose any file or drag it here'}
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            <p className="text-xs text-slate-500 mt-1">
               Supports <strong>all file formats</strong>: PDF, Word (DOCX/DOC), Text, Markdown, Images (PNG, JPG screenshots), RTF, JSON, up to 20 MB.
             </p>
           </div>
@@ -319,19 +315,19 @@ export const ResumePage: React.FC<ResumePageProps> = ({
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="px-5 py-2.5 rounded-lg bg-slate-900 dark:bg-amber-600 text-white font-medium text-xs sm:text-sm hover:bg-slate-800 dark:hover:bg-amber-700 transition-colors shadow-xs"
+              className="px-5 py-2.5 rounded-lg bg-slate-900 text-white font-medium text-xs sm:text-sm hover:bg-slate-800 transition-colors shadow-xs"
             >
               {isUploading ? 'Extracting Content & Skills...' : 'Select Any Resume File'}
             </button>
             <button
               onClick={() => setShowPasteBox(!showPasteBox)}
-              className="px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium text-xs sm:text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              className="px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 font-medium text-xs sm:text-sm hover:bg-slate-50 transition-colors"
             >
               {showPasteBox ? 'Hide Paste Box' : 'Paste Resume Text'}
             </button>
           </div>
 
-          <p className="text-[11px] text-slate-400 dark:text-slate-500">
+          <p className="text-[11px] text-slate-400">
             Privacy notice: Personal contact details (phone number, home address) are not required and are never shared.
           </p>
         </div>
@@ -778,6 +774,116 @@ export const ResumePage: React.FC<ResumePageProps> = ({
               </div>
             );
           })()}
+
+          {/* IN-DEPTH DEVELOPMENT AREAS ANALYSIS & PROFESSIONAL RESUME GUIDE */}
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 sm:p-7 shadow-xs space-y-6">
+            <div className="border-b border-slate-100 dark:border-slate-800 pb-4">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-sky-800 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/80 px-2.5 py-1 rounded border border-sky-200 dark:border-sky-800">
+                Professional Resume Standards & Executive Analysis
+              </span>
+              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mt-1 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-amber-500" />
+                How to Make Your Technical Resume Stand Out & ATS-Ready
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                A detailed engineering analysis on converting raw skill listings into high-impact, verifiable resume bullets that capture senior recruiter attention.
+              </p>
+            </div>
+
+            {/* 4 CORE DEVELOPMENT VECTORS */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div className="p-4 rounded-xl bg-amber-50/50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 space-y-2">
+                <span className="font-bold text-amber-950 dark:text-amber-300 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                  <TrendingUp className="w-4 h-4 text-amber-600" />
+                  1. Quantifiable Impact & Metrics
+                </span>
+                <p className="text-slate-700 dark:text-slate-300 text-[11px] leading-relaxed">
+                  <strong>Development Gap:</strong> Most developer resumes state <em>what</em> was built rather than <em>what resulted</em>.
+                </p>
+                <p className="text-slate-600 dark:text-slate-400 text-[11px]">
+                  <strong>Professional Fix:</strong> Use the formula: <code className="bg-amber-100 dark:bg-amber-900 px-1 py-0.5 rounded text-amber-900 dark:text-amber-200 font-mono">[Action Verb] + [Technical Feature] + [Quantified Metric / Scale]</code>.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-sky-50/50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 space-y-2">
+                <span className="font-bold text-sky-950 dark:text-sky-300 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                  <Terminal className="w-4 h-4 text-sky-600" />
+                  2. Active Engineering Verbs
+                </span>
+                <p className="text-slate-700 dark:text-slate-300 text-[11px] leading-relaxed">
+                  <strong>Development Gap:</strong> Weak phrases like "worked on", "handled", or "responsible for" diminish technical authority.
+                </p>
+                <p className="text-slate-600 dark:text-slate-400 text-[11px]">
+                  <strong>Professional Fix:</strong> Lead bullet points with strong verbs: <em>Architected, Engineered, Refactored, Benchmark-tested, Automated, Optimized, Containerized</em>.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-purple-50/50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 space-y-2">
+                <span className="font-bold text-purple-950 dark:text-purple-300 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                  <FileText className="w-4 h-4 text-purple-600" />
+                  3. ATS Parsing & Keyword Alignment
+                </span>
+                <p className="text-slate-700 dark:text-slate-300 text-[11px] leading-relaxed">
+                  <strong>Development Gap:</strong> Complex multi-column templates, tables, or graphical skill bars break automated ATS parsers.
+                </p>
+                <p className="text-slate-600 dark:text-slate-400 text-[11px]">
+                  <strong>Professional Fix:</strong> Stick to clean single-column PDF formatting with standard section headings (Education, Experience, Projects, Technical Skills).
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-2">
+                <span className="font-bold text-emerald-950 dark:text-emerald-300 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  4. Verifiable GitHub Evidence Links
+                </span>
+                <p className="text-slate-700 dark:text-slate-300 text-[11px] leading-relaxed">
+                  <strong>Development Gap:</strong> Unbacked keyword claims are often discounted by hiring managers during technical screening.
+                </p>
+                <p className="text-slate-600 dark:text-slate-400 text-[11px]">
+                  <strong>Professional Fix:</strong> Embed direct links to public GitHub repositories featuring clean commit history, unit tests, and README documentation.
+                </p>
+              </div>
+            </div>
+
+            {/* BEFORE & AFTER EXAMPLES */}
+            <div className="space-y-3 pt-2">
+              <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                Real-World Bullet Point Transformations:
+              </h4>
+
+              <div className="space-y-2.5 text-xs">
+                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+                  <div className="flex items-center gap-2 text-rose-700 dark:text-rose-400 font-semibold text-[11px]">
+                    <X className="w-3.5 h-3.5" /> Weak / Unprofessional:
+                  </div>
+                  <p className="font-mono text-[11px] text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900 p-2 rounded border border-slate-200 dark:border-slate-800">
+                    "Built a REST API using Node and Express for a web app project."
+                  </p>
+                  <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-semibold text-[11px] pt-1">
+                    <Check className="w-3.5 h-3.5" /> Professional & High-Impact:
+                  </div>
+                  <p className="font-mono text-[11px] text-slate-800 dark:text-slate-200 bg-emerald-50/60 dark:bg-emerald-950/40 p-2 rounded border border-emerald-200 dark:border-emerald-800">
+                    "Engineered a scalable RESTful API with Node.js, Express, and Zod input validation, serving 2,500+ daily requests with sub-40ms response latency."
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+                  <div className="flex items-center gap-2 text-rose-700 dark:text-rose-400 font-semibold text-[11px]">
+                    <X className="w-3.5 h-3.5" /> Weak / Unprofessional:
+                  </div>
+                  <p className="font-mono text-[11px] text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900 p-2 rounded border border-slate-200 dark:border-slate-800">
+                    "Used PostgreSQL database for storing user data."
+                  </p>
+                  <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-semibold text-[11px] pt-1">
+                    <Check className="w-3.5 h-3.5" /> Professional & High-Impact:
+                  </div>
+                  <p className="font-mono text-[11px] text-slate-800 dark:text-slate-200 bg-emerald-50/60 dark:bg-emerald-950/40 p-2 rounded border border-emerald-200 dark:border-emerald-800">
+                    "Designed relational PostgreSQL database schemas with Prisma ORM, utilizing foreign-key indexes and ACID transactions to ensure data consistency."
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
