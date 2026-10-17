@@ -1,0 +1,8 @@
+{
+  "name": " SkillTrace.ai - Up skill your Skills",
+  "description": "Know what your projects prove. Discover what to improve next. Compare your resume with your real GitHub coding projects and the skills employers need.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
