@@ -9,7 +9,12 @@ import {
   createUnavailableAssessment,
   getAiClient,
 } from '../server/ai.ts';
-import { getSampleDemoState, resetAppStateToDemo } from '../server/store.ts';
+import {
+  getAppState,
+  getSampleDemoState,
+  resetAppStateToDemo,
+  StorageConfigurationError,
+} from '../server/store.ts';
 import type {
   JobRequirement,
   SkillEvidenceItem,
@@ -426,8 +431,14 @@ test('store: clearly labels demo data and provides reset', async () => {
   );
 
   const previousDataDirectory = process.env.SKILLTRACE_DATA_DIR;
+  const previousDatabaseUrl = process.env.DATABASE_URL;
+  const previousPostgresUrl = process.env.POSTGRES_URL;
+  const previousVercel = process.env.VERCEL;
   const testDataDirectory = await fs.mkdtemp(path.join(os.tmpdir(), 'skilltrace-test-'));
   process.env.SKILLTRACE_DATA_DIR = testDataDirectory;
+  delete process.env.DATABASE_URL;
+  delete process.env.POSTGRES_URL;
+  delete process.env.VERCEL;
   try {
     const resetState = await resetAppStateToDemo();
     assert.equal(resetState.isDemoData, true);
@@ -441,7 +452,40 @@ test('store: clearly labels demo data and provides reset', async () => {
     } else {
       process.env.SKILLTRACE_DATA_DIR = previousDataDirectory;
     }
+    if (previousDatabaseUrl === undefined) delete process.env.DATABASE_URL;
+    else process.env.DATABASE_URL = previousDatabaseUrl;
+    if (previousPostgresUrl === undefined) delete process.env.POSTGRES_URL;
+    else process.env.POSTGRES_URL = previousPostgresUrl;
+    if (previousVercel === undefined) delete process.env.VERCEL;
+    else process.env.VERCEL = previousVercel;
     await fs.rm(testDataDirectory, { recursive: true, force: true });
+  }
+});
+
+test('store: rejects malformed database URLs without exposing their value', async () => {
+  const previousPostgresUrl = process.env.POSTGRES_URL;
+  const previousDatabaseUrl = process.env.DATABASE_URL;
+  const previousVercel = process.env.VERCEL;
+  const secretLikeValue = 'not-a-url-secret-value';
+
+  process.env.POSTGRES_URL = secretLikeValue;
+  delete process.env.DATABASE_URL;
+  process.env.VERCEL = '1';
+  try {
+    await assert.rejects(
+      getAppState(),
+      (error: unknown) =>
+        error instanceof StorageConfigurationError &&
+        error.message.includes('valid PostgreSQL connection URL') &&
+        !error.message.includes(secretLikeValue)
+    );
+  } finally {
+    if (previousPostgresUrl === undefined) delete process.env.POSTGRES_URL;
+    else process.env.POSTGRES_URL = previousPostgresUrl;
+    if (previousDatabaseUrl === undefined) delete process.env.DATABASE_URL;
+    else process.env.DATABASE_URL = previousDatabaseUrl;
+    if (previousVercel === undefined) delete process.env.VERCEL;
+    else process.env.VERCEL = previousVercel;
   }
 });
 

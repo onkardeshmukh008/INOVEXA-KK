@@ -31,6 +31,23 @@ function getDatabase() {
     }
     throw new StorageConfigurationError('POSTGRES_URL or DATABASE_URL is required to use the database state store.');
   }
+  let parsedConnectionString: URL;
+  try {
+    parsedConnectionString = new URL(connectionString);
+  } catch {
+    throw new StorageConfigurationError(
+      'POSTGRES_URL or DATABASE_URL must be a valid PostgreSQL connection URL.'
+    );
+  }
+  if (
+    connectionString !== connectionString.trim() ||
+    !['postgres:', 'postgresql:'].includes(parsedConnectionString.protocol) ||
+    !parsedConnectionString.hostname
+  ) {
+    throw new StorageConfigurationError(
+      'POSTGRES_URL or DATABASE_URL must be a valid PostgreSQL connection URL.'
+    );
+  }
   databaseQuery ??= neon(connectionString);
   return databaseQuery;
 }
